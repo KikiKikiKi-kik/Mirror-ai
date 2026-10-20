@@ -8,48 +8,38 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #fff;
-  color: #111;
 }
 
 body {
-  min-width: 0;
-}
-
-.app {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
+  font-family: Arial, sans-serif;
+  background: #fff;
+  color: #111;
   overflow: hidden;
 }
 
-/* =========================
-   SIDEBAR
-========================= */
+.app {
+  width: 100%;
+  height: 100%;
+}
 
 .sidebar {
   position: fixed;
-  z-index: 100;
   left: 0;
   top: 0;
   bottom: 0;
 
-  width: 270px;
-  max-width: 85vw;
-
-  display: flex;
-  flex-direction: column;
+  width: 260px;
 
   background: #f7f7f8;
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid #ddd;
+
+  z-index: 100;
 
   transform: translateX(-100%);
   transition: transform 0.2s ease;
 
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar.open {
@@ -58,123 +48,69 @@ body {
 
 .sidebar-header {
   height: 60px;
-  min-height: 60px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  padding: 0 14px 0 18px;
+  padding: 0 15px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
-
-  font-size: 17px;
+  gap: 8px;
   font-weight: 600;
 }
 
-.brand-mark,
-.welcome-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 32px;
-  height: 32px;
-
-  border-radius: 9px;
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: #111;
   color: white;
 
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-menu {
-  width: 34px;
-  height: 34px;
-
   border: 0;
   background: transparent;
-
-  border-radius: 8px;
-
-  font-size: 27px;
-  line-height: 1;
-  color: #555;
-
+  font-size: 28px;
   cursor: pointer;
 }
 
-.close-menu:hover {
-  background: #e9e9e9;
-}
-
 .sidebar-top {
-  padding: 8px 12px;
+  padding: 10px;
 }
 
 .new-chat {
   width: 100%;
   height: 44px;
 
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 0 13px;
-
   border: 1px solid #ddd;
   border-radius: 10px;
 
   background: white;
-  color: #111;
 
-  font-size: 14px;
   cursor: pointer;
-}
-
-.new-chat:hover {
-  background: #f0f0f0;
-}
-
-.plus {
-  font-size: 20px;
-  line-height: 1;
 }
 
 .history {
   flex: 1;
-  min-height: 0;
-
   overflow-y: auto;
-
-  padding: 8px 10px;
+  padding: 10px;
 }
 
 .history-title {
-  padding: 8px 8px 7px;
-
   font-size: 12px;
   color: #777;
+  margin-bottom: 6px;
 }
 
 .history-item {
-  width: 100%;
-
-  padding: 10px 9px;
-
+  padding: 9px;
   border-radius: 8px;
-
-  font-size: 14px;
-  color: #333;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
   cursor: pointer;
 }
 
@@ -183,140 +119,82 @@ body {
 }
 
 .sidebar-bottom {
-  padding: 10px 12px;
+  padding: 10px;
 }
 
 .exit-button {
   width: 100%;
   height: 42px;
-
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 0 13px;
-
   border: 0;
-  border-radius: 9px;
-
   background: transparent;
-  color: #555;
-
-  font-size: 14px;
-
   cursor: pointer;
+  text-align: left;
 }
 
-.exit-button:hover {
-  background: #e9e9e9;
-}
-
-/* =========================
-   MAIN
-========================= */
+/* MAIN */
 
 .main {
-  position: relative;
-
   width: 100%;
   height: 100%;
 
-  min-width: 0;
-  min-height: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  overflow: hidden;
+  position: relative;
 }
 
 .topbar {
   position: absolute;
-  z-index: 20;
-
   top: 0;
   left: 0;
   right: 0;
 
-  height: 54px;
+  height: 55px;
 
   display: flex;
   align-items: center;
 
-  padding: 0 12px;
+  padding: 0 10px;
 
-  pointer-events: none;
+  z-index: 20;
 }
 
 .mobile-menu {
-  pointer-events: auto;
-
   width: 40px;
   height: 40px;
 
   border: 0;
-  border-radius: 9px;
-
-  background: rgba(255, 255, 255, 0.92);
+  background: transparent;
 
   font-size: 22px;
-  color: #222;
 
   cursor: pointer;
 }
 
-.mobile-menu:hover {
-  background: #f0f0f0;
-}
-
 .mobile-title {
-  margin-left: 10px;
-
-  font-size: 16px;
+  margin-left: 8px;
   font-weight: 600;
 }
 
-/* =========================
-   CHAT
-========================= */
-
 .chat {
-  position: relative;
-
   width: 100%;
   height: 100%;
 
-  min-width: 0;
-  min-height: 0;
-
   display: flex;
   flex-direction: column;
-
-  overflow: hidden;
 }
 
 .messages {
   flex: 1;
-  min-height: 0;
-
-  width: 100%;
 
   overflow-y: auto;
-  overflow-x: hidden;
 
-  padding: 70px 16px 150px;
+  padding: 70px 15px 140px;
 }
 
 .welcome {
-  width: 100%;
-  max-width: 760px;
-
-  min-height: calc(100% - 30px);
-
-  margin: 0 auto;
+  height: 100%;
 
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
 
@@ -324,37 +202,38 @@ body {
 }
 
 .welcome-mark {
-  width: 46px;
-  height: 46px;
+  width: 45px;
+  height: 45px;
 
-  border-radius: 13px;
+  border-radius: 12px;
 
-  font-size: 20px;
+  background: #111;
+  color: white;
 
-  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+
+  margin-bottom: 15px;
 }
 
 .welcome h1 {
+  font-size: 24px;
   margin: 0;
-
-  font-size: 25px;
-  font-weight: 600;
 }
 
-/* =========================
-   MESSAGES
-========================= */
+/* MESSAGES */
 
 .message {
   width: 100%;
   max-width: 760px;
 
-  margin: 0 auto 22px;
+  margin: 0 auto 20px;
 
   font-size: 15px;
-  line-height: 1.55;
-
-  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 
 .message.user {
@@ -363,56 +242,14 @@ body {
 }
 
 .message.user .message-content {
-  max-width: 82%;
-
+  background: #f0f0f0;
   padding: 10px 14px;
+  border-radius: 17px;
 
-  border-radius: 18px;
-
-  background: #f0f0f0;
+  max-width: 85%;
 }
 
-.message.assistant .message-content {
-  width: 100%;
-}
-
-.message-content h1,
-.message-content h2,
-.message-content h3 {
-  margin-top: 18px;
-  margin-bottom: 8px;
-}
-
-.message-content h1 {
-  font-size: 22px;
-}
-
-.message-content h2 {
-  font-size: 19px;
-}
-
-.message-content h3 {
-  font-size: 17px;
-}
-
-.message-content strong {
-  font-weight: 700;
-}
-
-.message-content code {
-  padding: 2px 5px;
-
-  border-radius: 5px;
-
-  background: #f0f0f0;
-
-  font-family: monospace;
-  font-size: 0.9em;
-}
-
-/* =========================
-   INPUT
-========================= */
+/* INPUT */
 
 .composer-area {
   position: absolute;
@@ -421,15 +258,8 @@ body {
   right: 0;
   bottom: 0;
 
-  z-index: 10;
-
-  padding: 10px 12px 12px;
-
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0),
-    #fff 18px
-  );
+  padding: 10px;
+  background: white;
 }
 
 .composer {
@@ -438,51 +268,34 @@ body {
 
   margin: 0 auto;
 
-  min-height: 52px;
+  min-height: 50px;
 
   display: flex;
   align-items: flex-end;
 
-  padding: 6px 7px 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 17px;
 
-  border: 1px solid #d9d9d9;
-  border-radius: 18px;
-
-  background: white;
-
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  padding: 5px 7px 5px 12px;
 }
 
 #messageInput {
   flex: 1;
 
   min-width: 0;
-  max-height: 140px;
-
-  margin: 0;
-  padding: 8px 4px;
 
   border: 0;
   outline: 0;
 
   resize: none;
 
-  background: transparent;
-
   font-family: inherit;
   font-size: 16px;
-  line-height: 1.4;
 
-  color: #111;
-}
-
-#messageInput::placeholder {
-  color: #888;
+  padding: 8px 4px;
 }
 
 .send-button {
-  flex: 0 0 auto;
-
   width: 38px;
   height: 38px;
 
@@ -492,35 +305,21 @@ body {
   background: #111;
   color: white;
 
-  font-size: 22px;
-  line-height: 1;
+  font-size: 21px;
 
   cursor: pointer;
 }
 
-.send-button:hover {
-  background: #333;
-}
-
-.send-button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
 .disclaimer {
-  max-width: 760px;
-
-  margin: 7px auto 0;
-
   text-align: center;
 
-  font-size: 11px;
+  font-size: 10px;
   color: #888;
+
+  margin: 6px 0 0;
 }
 
-/* =========================
-   MOBILE
-========================= */
+/* PHONE */
 
 @media (max-width: 700px) {
   .sidebar {
@@ -528,58 +327,26 @@ body {
     max-width: 82vw;
   }
 
-  .mobile-menu {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .mobile-title {
-    display: block;
+  .main {
+    width: 100%;
+    margin: 0;
   }
 
   .messages {
-    padding-left: 12px;
-    padding-right: 12px;
-    padding-bottom: 145px;
-  }
-
-  .message {
-    font-size: 15px;
-  }
-
-  .message.user .message-content {
-    max-width: 88%;
-  }
-
-  .welcome h1 {
-    font-size: 23px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   .composer-area {
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-bottom: 8px;
-  }
-
-  .composer {
-    border-radius: 17px;
-  }
-
-  .disclaimer {
-    font-size: 10px;
+    padding: 7px;
   }
 }
 
-/* =========================
-   DESKTOP
-========================= */
+/* PC */
 
 @media (min-width: 701px) {
   .sidebar {
     transform: translateX(0);
-    width: 260px;
-    max-width: none;
   }
 
   .main {
@@ -587,19 +354,9 @@ body {
     width: calc(100% - 260px);
   }
 
-  .close-menu {
-    display: none;
-  }
-
-  .mobile-menu {
-    display: none;
-  }
-
+  .close-menu,
+  .mobile-menu,
   .mobile-title {
-    display: none;
-  }
-
-  .topbar {
     display: none;
   }
 }
