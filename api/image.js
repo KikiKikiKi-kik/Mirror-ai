@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { prompt } = req.body || {};
+    const { prompt, aspectRatio } = req.body || {};
 
     if (!prompt || !prompt.trim()) {
       return res.status(400).json({
@@ -26,13 +26,33 @@ export default async function handler(req, res) {
       });
     }
 
+    const allowedRatios = [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9",
+      "21:9"
+    ];
+
+    const ratio =
+      allowedRatios.includes(aspectRatio)
+        ? aspectRatio
+        : "1:1";
+
     const interaction =
       await ai.interactions.create({
         model: "gemini-nano-banana-2.1",
+
         input: prompt.trim(),
+
         response_format: {
           type: "image",
-          aspect_ratio: "1:1",
+          aspect_ratio: ratio,
           image_size: "1K"
         }
       });
@@ -44,11 +64,13 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
-      image:
-        interaction.output_image.data,
+      image: interaction.output_image.data,
+
       mimeType:
         interaction.output_image.mime_type ||
-        "image/png"
+        "image/png",
+
+      aspectRatio: ratio
     });
 
   } catch (error) {
