@@ -4,12 +4,15 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY
 });
 
+
 export default async function handler(req, res) {
 
   if (req.method !== "POST") {
+
     return res.status(405).json({
       error: "Method not allowed"
     });
+
   }
 
 
@@ -17,21 +20,29 @@ export default async function handler(req, res) {
 
     const {
       message,
-      mode = "normal"
+      mode = "normal",
+      image = null
     } = req.body || {};
 
 
-    if (!message || !message.trim()) {
+    if (
+      (!message || !message.trim()) &&
+      !image
+    ) {
+
       return res.status(400).json({
-        error: "Message is empty"
+        error: "Message or image is required"
       });
+
     }
 
 
     if (!process.env.GEMINI_API_KEY) {
+
       return res.status(500).json({
         error: "GEMINI_API_KEY is missing"
       });
+
     }
 
 
@@ -39,59 +50,80 @@ export default async function handler(req, res) {
       mode === "code";
 
 
-    /* =========================
-       НАСТРОЙКИ РЕЖИМОВ
-    ========================= */
-
     const systemInstruction =
       isCodeMode
         ? `
 Ты — Mirror Code, режим Mirror для программирования.
 
-Твоя главная задача — помогать писать, исправлять,
-объяснять и улучшать код.
+Твоя главная задача — помогать писать,
+исправлять, объяснять и улучшать код.
+
+Если пользователь отправил изображение,
+внимательно изучи его.
+
+Это может быть:
+- скриншот ошибки;
+- код;
+- интерфейс программы;
+- схема;
+- задание;
+- фотография экрана.
+
+Если на изображении есть текст,
+используй его при ответе.
 
 Правила Mirror Code:
 
 1. Если пользователь просит написать файл целиком —
-   выдавай полный готовый файл, а не отдельные куски.
+   выдавай полный готовый файл.
 
 2. Не сокращай код словами вроде:
    "остальной код без изменений",
-   "и так далее",
-   "добавьте остальное самостоятельно".
+   "и так далее".
 
 3. Если для решения нужен большой объём кода,
-   можешь давать очень длинный ответ.
+   можешь давать длинный ответ.
 
-4. Максимальная желаемая длина ответа —
-   примерно 4500 слов.
+4. Старайся выдавать код,
+   который можно сразу скопировать.
 
-5. Не пытайся специально растянуть простой ответ
-   до 4500 слов. Если задача решается короче —
-   отвечай короче.
+5. Если пользователь прислал ошибку
+   или скриншот ошибки,
+   сначала определи причину,
+   затем предложи исправление.
 
-6. Для кода используй Markdown-блоки с указанием языка.
+6. Если пользователь просит изменить файл
+   и контекста достаточно,
+   возвращай полный обновлённый файл.
 
-7. Старайся выдавать код, который можно сразу
-   скопировать и использовать.
+7. Для кода используй Markdown-блоки
+   с указанием языка.
 
-8. Если пользователь прислал ошибку,
-   сначала определи вероятную причину,
-   затем дай исправление.
-
-9. Если пользователь просит изменить существующий
-   файл и контекста достаточно, возвращай полный
-   обновлённый файл.
-
-10. Отвечай на языке пользователя.
+8. Отвечай на языке пользователя.
 `
         : `
 Ты — Mirror, полезный универсальный ИИ-ассистент.
 
 Отвечай понятно, естественно и по существу.
 
-Обычно не превышай примерно 1000 слов за один ответ.
+Если пользователь отправил изображение,
+внимательно проанализируй его.
+
+Ты можешь:
+- описывать изображения;
+- читать текст с изображений;
+- анализировать фотографии;
+- объяснять содержимое скриншотов;
+- помогать с заданиями на фотографиях;
+- распознавать объекты, интерфейсы и схемы.
+
+Не выдумывай то, чего нельзя уверенно определить
+по изображению.
+
+Если изображение нечёткое или информации недостаточно,
+скажи об этом.
+
+Обычно не превышай примерно 1000 слов.
 
 Если вопрос простой — отвечай значительно короче.
 
@@ -101,23 +133,123 @@ export default async function handler(req, res) {
 `;
 
 
-    /*
-      Gemini считает ограничение в токенах,
-      а не в словах.
-
-      Normal:  около 1000 слов максимум.
-      Code:    большой запас для ~4500 слов + кода.
-    */
-
     const maxOutputTokens =
       isCodeMode
         ? 10000
         : 2500;
 
 
-    /* =========================
-       GEMINI
-    ========================= */
+    /*
+      Формируем содержимое запроса.
+    */
+
+    const contents = [];
+
+
+    /*
+      Если есть текст — добавляем его.
+    */
+
+    if (message && message.trim()) {
+
+      contents.push({
+        text: message.trim()
+      });
+
+    }
+
+
+    /*
+      Если есть изображение —
+      добавляем его как inlineData.
+    */
+
+    if (image) {
+
+      /*
+        Ожидается Data URL:
+
+        data:image/jpeg;base64,...
+
+      */
+
+      if (
+        typeof image !== "string" ||
+        !image.startsWith("data:image/")
+      ) {
+
+        return res.status(400).json({
+          error: "Invalid image format"
+        });
+
+      }
+
+
+      const commaIndex =
+        image.indexOf(",");
+
+
+      if (commaIndex === -1) {
+
+        return res.status(400).json({
+          error: "Invalid image data"
+        });
+
+      }
+
+
+      const header =
+        image.slice(
+          0,
+          commaIndex
+        );
+
+
+      const base64Data =
+        image.slice(
+          commaIndex + 1
+        );
+
+
+      const mimeMatch =
+        header.match(
+          /^data:(image\/[^;]+);base64$/
+        );
+
+
+      if (!mimeMatch) {
+
+        return res.status(400).json({
+          error: "Invalid image MIME type"
+        });
+
+      }
+
+
+      const mimeType =
+        mimeMatch[1];
+
+
+      contents.push({
+
+        inlineData: {
+
+          mimeType:
+            mimeType,
+
+          data:
+            base64Data
+
+        }
+
+      });
+
+    }
+
+
+    /*
+      Запрашиваем Gemini.
+    */
 
     const stream =
       await ai.models.generateContentStream({
@@ -126,7 +258,7 @@ export default async function handler(req, res) {
           "gemini-3.5-flash-lite",
 
         contents:
-          message.trim(),
+          contents,
 
         config: {
 
@@ -135,25 +267,31 @@ export default async function handler(req, res) {
 
           maxOutputTokens:
             maxOutputTokens
+
         }
+
       });
 
 
-    /* =========================
-       STREAM
-    ========================= */
+    /*
+      Включаем потоковый ответ.
+    */
 
-    res.statusCode = 200;
+    res.statusCode =
+      200;
+
 
     res.setHeader(
       "Content-Type",
       "text/plain; charset=utf-8"
     );
 
+
     res.setHeader(
       "Cache-Control",
       "no-cache, no-transform"
     );
+
 
     res.setHeader(
       "X-Accel-Buffering",
@@ -161,11 +299,22 @@ export default async function handler(req, res) {
     );
 
 
-    for await (const chunk of stream) {
+    /*
+      Отправляем ответ постепенно.
+    */
+
+    for await (
+      const chunk of stream
+    ) {
 
       if (chunk.text) {
-        res.write(chunk.text);
+
+        res.write(
+          chunk.text
+        );
+
       }
+
     }
 
 
@@ -191,10 +340,14 @@ export default async function handler(req, res) {
         status:
           error.status ||
           null
+
       });
+
     }
 
 
     res.end();
+
   }
+
 }
