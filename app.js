@@ -1,662 +1,634 @@
-const messages = document.getElementById(“messages”);
-const input = document.getElementById(“messageInput”);
-const sendButton = document.getElementById(“sendButton”);
-const newChatButton = document.getElementById(“newChat”);
-const historyList = document.getElementById(“historyList”);
-const mobileMenu = document.getElementById(“mobileMenu”);
-const sidebar = document.querySelector(”.sidebar”);
+const sidebar = document.querySelector(".sidebar");
+const mobileMenu = document.getElementById("mobileMenu");
+const closeMenu = document.getElementById("closeMenu");
+const newChatButton = document.getElementById("newChat");
+const exitButton = document.getElementById("exitButton");
 
+const messages = document.getElementById("messages");
+const welcome = document.getElementById("welcome");
+const input = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendButton");
+const historyList = document.getElementById("historyList");
+
+const STORAGE_KEY = "mirror_chats_v1";
+
+let chats = [];
 let currentChatId = null;
-let chats = loadChats();
+let isGenerating = false;
 
-// =========================
-// LOCAL STORAGE
-// =========================
+
+/* =========================
+   STORAGE
+========================= */
 
 function loadChats() {
-try {
-const saved = localStorage.getItem(“mirror_chats”);
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
 
-if (!saved) return [];
-const data = JSON.parse(saved);
-return Array.isArray(data) ? data : [];
+    if (saved) {
+      chats = JSON.parse(saved);
+    }
 
-} catch (error) {
-console.error(error);
-return [];
+    if (!Array.isArray(chats)) {
+      chats = [];
+    }
+  } catch (error) {
+    console.error("Ошибка загрузки чатов:", error);
+    chats = [];
+  }
 }
-}
+
 
 function saveChats() {
-localStorage.setItem(
-“mirror_chats”,
-JSON.stringify(chats)
-);
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(chats)
+    );
+  } catch (error) {
+    console.error("Ошибка сохранения чатов:", error);
+  }
 }
 
-// =========================
-// CURRENT CHAT
-// =========================
+
+/* =========================
+   CURRENT CHAT
+========================= */
 
 function getCurrentChat() {
-return chats.find(
-chat => chat.id === currentChatId
-);
+  return chats.find(
+    chat => chat.id === currentChatId
+  );
 }
 
-// =========================
-// SIDEBAR
-// =========================
 
-function closeSidebar() {
-
-// Убираем класс
-sidebar.classList.remove(“open”);
-
-// И дополнительно принудительно
-// закрываем меню на телефоне
-sidebar.style.transform = “translateX(-100%)”;
-
-}
+/* =========================
+   SIDEBAR
+========================= */
 
 function openSidebar() {
-
-sidebar.classList.add(“open”);
-
-sidebar.style.transform = “translateX(0)”;
-
+  sidebar.classList.add("open");
 }
+
+
+function closeSidebar() {
+  sidebar.classList.remove("open");
+}
+
 
 function toggleSidebar() {
-
-if (sidebar.classList.contains(“open”)) {
-
-closeSidebar();
-
-} else {
-
-openSidebar();
-
+  sidebar.classList.toggle("open");
 }
 
-}
 
-// =========================
-// HISTORY
-// =========================
+/* =========================
+   HISTORY
+========================= */
 
 function renderHistory() {
+  historyList.innerHTML = "";
 
-historyList.innerHTML = “”;
+  if (chats.length === 0) {
+    return;
+  }
 
-chats.forEach(chat => {
+  const sortedChats = [...chats].reverse();
 
-const item = document.createElement("button");
-item.type = "button";
-item.className = "history-item";
-item.textContent =
-  chat.title || "Новый чат";
-if (chat.id === currentChatId) {
-  item.classList.add("active");
+  sortedChats.forEach(chat => {
+
+    const item = document.createElement("div");
+
+    item.className = "history-item";
+
+    item.textContent =
+      chat.title || "Новый чат";
+
+    item.addEventListener(
+      "click",
+      () => openChat(chat.id)
+    );
+
+    historyList.appendChild(item);
+  });
 }
-item.addEventListener(
-  "click",
-  () => openChat(chat.id)
-);
-historyList.appendChild(item);
 
-});
 
-}
-
-// =========================
-// WELCOME
-// =========================
+/* =========================
+   WELCOME
+========================= */
 
 function showWelcome() {
 
-messages.innerHTML = “”;
+  messages.innerHTML = "";
 
-const welcome =
-document.createElement(“div”);
+  const welcomeElement =
+    document.createElement("div");
 
-welcome.className = “welcome”;
+  welcomeElement.className = "welcome";
 
-welcome.id = “welcome”;
+  welcomeElement.innerHTML = `
+    <div class="welcome-mark">M</div>
+    <h1>Чем могу помочь?</h1>
+  `;
 
-welcome.innerHTML = `
-M
-<h1>
-  Чем могу помочь?
-</h1>
-
-`;
-
-messages.appendChild(welcome);
+  messages.appendChild(welcomeElement);
 }
 
-// =========================
-// NEW CHAT
-// =========================
+
+/* =========================
+   NEW CHAT
+========================= */
 
 function newChat() {
 
-// Создаём состояние нового чата
-currentChatId = null;
+  currentChatId = null;
 
-// Очищаем сообщения
-showWelcome();
+  showWelcome();
 
-// Очищаем поле
-input.value = “”;
+  input.value = "";
 
-resizeInput();
+  resizeInput();
 
-// ВОТ ЭТО ГЛАВНОЕ
-// закрываем меню ПРИНУДИТЕЛЬНО
-closeSidebar();
+  closeSidebar();
 
-// Обновляем историю
-renderHistory();
+  renderHistory();
 
-// Возвращаем курсор
-input.focus();
-
+  input.focus();
 }
 
-// =========================
-// CREATE CHAT
-// =========================
 
-function createChat(title) {
+/* =========================
+   CREATE CHAT
+========================= */
 
-const chat = {
+function createChat(firstMessage) {
 
-id:
-  Date.now().toString(),
-title:
-  title.length > 35
-    ? title.substring(0, 35) + "..."
-    : title,
-messages: []
+  const chat = {
+    id: Date.now().toString(),
 
-};
+    title:
+      firstMessage.length > 40
+        ? firstMessage.slice(0, 40) + "..."
+        : firstMessage,
 
-chats.unshift(chat);
+    messages: []
+  };
 
-currentChatId =
-chat.id;
+  chats.push(chat);
 
-saveChats();
+  currentChatId = chat.id;
 
-renderHistory();
+  saveChats();
 
-return chat;
+  renderHistory();
+
+  return chat;
 }
 
-// =========================
-// OPEN CHAT
-// =========================
 
-function openChat(id) {
+/* =========================
+   OPEN CHAT
+========================= */
 
-const chat =
-chats.find(
-item => item.id === id
-);
+function openChat(chatId) {
 
-if (!chat) return;
+  const chat = chats.find(
+    item => item.id === chatId
+  );
 
-currentChatId =
-chat.id;
+  if (!chat) {
+    return;
+  }
 
-messages.innerHTML = “”;
+  currentChatId = chat.id;
 
-if (
-!chat.messages ||
-chat.messages.length === 0
-) {
+  messages.innerHTML = "";
 
-showWelcome();
+  chat.messages.forEach(message => {
 
-} else {
-
-chat.messages.forEach(
-  message => {
     addMessage(
       message.role,
       message.content,
       false
     );
+
+  });
+
+  closeSidebar();
+
+  scrollToBottom();
+}
+
+
+/* =========================
+   ADD MESSAGE
+========================= */
+
+function addMessage(
+  role,
+  text,
+  scroll = true
+) {
+
+  const wrapper =
+    document.createElement("div");
+
+  wrapper.className =
+    "message " +
+    (role === "user"
+      ? "user"
+      : "assistant");
+
+  const content =
+    document.createElement("div");
+
+  content.className =
+    "message-content";
+
+  if (role === "assistant") {
+
+    renderMarkdown(
+      content,
+      text
+    );
+
+  } else {
+
+    content.textContent = text;
+
   }
-);
 
+  wrapper.appendChild(content);
+
+  messages.appendChild(wrapper);
+
+  if (scroll) {
+    scrollToBottom();
+  }
+
+  return content;
 }
 
-renderHistory();
 
-closeSidebar();
+/* =========================
+   MARKDOWN
+========================= */
 
-scrollToBottom();
+function renderMarkdown(
+  element,
+  text
+) {
 
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  html = html.replace(
+    /\*\*(.+?)\*\*/g,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /__(.+?)__/g,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+    "<em>$1</em>"
+  );
+
+  html = html.replace(
+    /`([^`\n]+)`/g,
+    "<code>$1</code>"
+  );
+
+  html = html.replace(
+    /^### (.+)$/gm,
+    "<h3>$1</h3>"
+  );
+
+  html = html.replace(
+    /^## (.+)$/gm,
+    "<h2>$1</h2>"
+  );
+
+  html = html.replace(
+    /^# (.+)$/gm,
+    "<h1>$1</h1>"
+  );
+
+  html = html.replace(
+    /^- (.+)$/gm,
+    "• $1"
+  );
+
+  html = html.replace(
+    /\n/g,
+    "<br>"
+  );
+
+  element.innerHTML = html;
 }
 
-// =========================
-// SEND MESSAGE
-// =========================
+
+/* =========================
+   SEND MESSAGE
+========================= */
 
 async function sendMessage() {
 
-const text =
-input.value.trim();
-
-if (
-!text ||
-sendButton.disabled
-) {
-return;
-}
-
-input.value = “”;
-
-resizeInput();
-
-const welcome =
-document.getElementById(“welcome”);
-
-if (welcome) {
-welcome.remove();
-}
-
-addMessage(
-“user”,
-text
-);
-
-sendButton.disabled = true;
-
-// Если это новый чат —
-// создаём его
-if (!currentChatId) {
-
-createChat(text);
-
-}
-
-const chat =
-getCurrentChat();
-
-if (chat) {
-
-chat.messages.push({
-  role: "user",
-  content: text
-});
-saveChats();
-
-}
-
-const loading =
-addMessage(
-“mirror”,
-“”
-);
-
-const bubble =
-loading.querySelector(
-“.bubble”
-);
-
-bubble.classList.add(
-“thinking”
-);
-
-bubble.textContent =
-“Думаю…”;
-
-try {
-
-const response =
-  await fetch(
-    "/api/chat",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
-      body:
-        JSON.stringify({
-          message: text
-        })
-    }
-  );
-if (!response.ok) {
-  const error =
-    await response.text();
-  throw new Error(
-    error ||
-    `HTTP ${response.status}`
-  );
-}
-if (!response.body) {
-  throw new Error(
-    "Streaming не поддерживается"
-  );
-}
-const reader =
-  response.body.getReader();
-const decoder =
-  new TextDecoder(
-    "utf-8"
-  );
-let answer = "";
-let firstChunk = true;
-while (true) {
-  const {
-    value,
-    done
-  } =
-    await reader.read();
-  if (done) break;
-  const chunk =
-    decoder.decode(
-      value,
-      {
-        stream: true
-      }
-    );
-  if (!chunk) continue;
-  answer += chunk;
-  if (firstChunk) {
-    bubble.classList.remove(
-      "thinking"
-    );
-    firstChunk = false;
+  if (isGenerating) {
+    return;
   }
-  renderMarkdown(
-    bubble,
-    answer
-  );
-  scrollToBottom();
-}
-const last =
-  decoder.decode();
-if (last) {
-  answer += last;
-  renderMarkdown(
-    bubble,
-    answer
-  );
-}
-if (!answer.trim()) {
-  bubble.textContent =
-    "Не удалось получить ответ.";
-}
-if (chat) {
+
+  const text =
+    input.value.trim();
+
+  if (!text) {
+    return;
+  }
+
+  isGenerating = true;
+
+  sendButton.disabled = true;
+
+  input.value = "";
+
+  resizeInput();
+
+  if (!currentChatId) {
+
+    showWelcome();
+
+    createChat(text);
+
+  }
+
+  const chat =
+    getCurrentChat();
+
+  if (!chat) {
+    isGenerating = false;
+    sendButton.disabled = false;
+    return;
+  }
+
+
+  /* USER MESSAGE */
+
   chat.messages.push({
-    role: "mirror",
-    content: answer
+    role: "user",
+    content: text
   });
+
   saveChats();
+
+  addMessage(
+    "user",
+    text
+  );
+
+
+  /* ASSISTANT MESSAGE */
+
+  const assistantElement =
+    addMessage(
+      "assistant",
+      "",
+      true
+    );
+
+
+  let fullResponse = "";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/chat",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            message: text
+          })
+        }
+      );
+
+
+    if (!response.ok) {
+
+      let errorText =
+        "Ошибка сервера";
+
+      try {
+
+        const errorData =
+          await response.json();
+
+        errorText =
+          errorData.error ||
+          errorText;
+
+      } catch {}
+
+      throw new Error(
+        errorText
+      );
+    }
+
+
+    if (!response.body) {
+      throw new Error(
+        "Сервер не вернул поток ответа"
+      );
+    }
+
+
+    const reader =
+      response.body.getReader();
+
+    const decoder =
+      new TextDecoder(
+        "utf-8"
+      );
+
+
+    while (true) {
+
+      const {
+        value,
+        done
+      } =
+        await reader.read();
+
+      if (done) {
+        break;
+      }
+
+
+      const chunk =
+        decoder.decode(
+          value,
+          {
+            stream: true
+          }
+        );
+
+      fullResponse += chunk;
+
+      renderMarkdown(
+        assistantElement,
+        fullResponse
+      );
+
+      scrollToBottom();
+    }
+
+
+    /* SAVE AI RESPONSE */
+
+    chat.messages.push({
+      role: "assistant",
+      content: fullResponse
+    });
+
+    saveChats();
+
+    renderHistory();
+
+  } catch (error) {
+
+    console.error(
+      "Mirror error:",
+      error
+    );
+
+    const errorMessage =
+      "Ошибка: " +
+      (error.message ||
+        "не удалось получить ответ");
+
+    renderMarkdown(
+      assistantElement,
+      errorMessage
+    );
+
+  } finally {
+
+    isGenerating = false;
+
+    sendButton.disabled = false;
+
+    input.focus();
+
+    scrollToBottom();
+  }
 }
 
-} catch (error) {
 
-console.error(error);
-bubble.classList.remove(
-  "thinking"
-);
-bubble.textContent =
-  "Ошибка: " +
-  error.message;
-
-}
-
-renderHistory();
-
-sendButton.disabled = false;
-
-input.focus();
-
-scrollToBottom();
-
-}
-
-// =========================
-// MARKDOWN
-// =========================
-
-function renderMarkdown(
-element,
-text
-) {
-
-let html = text
-.replace(/&/g, “&”)
-.replace(/</g, “<”)
-.replace(/>/g, “>”);
-
-html = html.replace(
-/**(.+?)**/g,
-“$1”
-);
-
-html = html.replace(
-/(.+?)/g,
-“$1”
-);
-
-html = html.replace(
-/(?<!*)*([^*\n]+)*(?!*)/g,
-“$1”
-);
-
-html = html.replace(
-/([^\n]+)`/g,
-“$1”
-);
-
-html = html.replace(
-/^### (.+)$/gm,
-“$1”
-);
-
-html = html.replace(
-/^## (.+)$/gm,
-“$1”
-);
-
-html = html.replace(
-/^# (.+)$/gm,
-“$1”
-);
-
-html = html.replace(
-/^- (.+)$/gm,
-“• $1”
-);
-
-html = html.replace(
-/\n/g,
-“”
-);
-
-element.innerHTML = html;
-}
-
-// =========================
-// ADD MESSAGE
-// =========================
-
-function addMessage(
-role,
-text,
-scroll = true
-) {
-
-const message =
-document.createElement(“div”);
-
-message.className =
-message message-${role};
-
-const bubble =
-document.createElement(“div”);
-
-bubble.className =
-“bubble”;
-
-if (
-role === “mirror” &&
-text
-) {
-
-renderMarkdown(
-  bubble,
-  text
-);
-
-} else {
-
-bubble.textContent =
-  text;
-
-}
-
-message.appendChild(
-bubble
-);
-
-messages.appendChild(
-message
-);
-
-if (scroll) {
-scrollToBottom();
-}
-
-return message;
-}
-
-// =========================
-// SCROLL
-// =========================
+/* =========================
+   SCROLL
+========================= */
 
 function scrollToBottom() {
 
-requestAnimationFrame(
-() => {
-
-  messages.scrollTo({
-    top:
-      messages.scrollHeight,
-    behavior:
-      "smooth"
-  });
+  messages.scrollTop =
+    messages.scrollHeight;
 }
 
-);
 
-}
-
-// =========================
-// INPUT
-// =========================
+/* =========================
+   TEXTAREA SIZE
+========================= */
 
 function resizeInput() {
 
-input.style.height = “auto”;
+  input.style.height = "auto";
 
-input.style.height =
-Math.min(
-input.scrollHeight,
-180
-) + “px”;
-
+  input.style.height =
+    Math.min(
+      input.scrollHeight,
+      140
+    ) + "px";
 }
 
-// =========================
-// EVENTS
-// =========================
 
-newChatButton.addEventListener(
-“click”,
-newChat
-);
-
-sendButton.addEventListener(
-“click”,
-sendMessage
-);
+/* =========================
+   EVENTS
+========================= */
 
 mobileMenu.addEventListener(
-“click”,
-toggleSidebar
+  "click",
+  toggleSidebar
 );
 
-input.addEventListener(
-“input”,
-resizeInput
-);
-
-input.addEventListener(
-“keydown”,
-event => {
-
-if (
-  event.key === "Enter" &&
-  !event.shiftKey
-) {
-  event.preventDefault();
-  sendMessage();
-}
-
-}
-);
-
-// =========================
-// CLOSE MENU BUTTON
-// =========================
-
-const closeMenu =
-document.getElementById(
-“closeMenu”
-);
-
-if (closeMenu) {
 
 closeMenu.addEventListener(
-“click”,
-closeSidebar
+  "click",
+  closeSidebar
 );
 
-}
 
-// =========================
-// EXIT
-// =========================
-
-const exitButton =
-document.getElementById(
-“exitButton”
+newChatButton.addEventListener(
+  "click",
+  newChat
 );
 
-if (exitButton) {
 
 exitButton.addEventListener(
-“click”,
-closeSidebar
+  "click",
+  closeSidebar
 );
 
-}
 
-// =========================
-// START
-// =========================
+sendButton.addEventListener(
+  "click",
+  sendMessage
+);
+
+
+input.addEventListener(
+  "input",
+  resizeInput
+);
+
+
+input.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+/* =========================
+   START
+========================= */
+
+loadChats();
 
 renderHistory();
 
 showWelcome();
 
-input.focus();
+resizeInput();
