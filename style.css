@@ -829,3 +829,39 @@ textarea {
     display: none;
   }
 }
+
+/* =========================
+   THINKING
+========================= */
+
+.thinking-message {
+  opacity: 0.65;
+}
+
+.thinking-text {
+  font-size: 14px;
+  color: #777;
+}
+
+.thinking-dots {
+  display: inline-block;
+  width: 18px;
+  text-align: left;
+  animation: thinkingDots 1.2s infinite;
+}
+
+@keyframes thinkingDots {
+
+  0% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
+
+}
