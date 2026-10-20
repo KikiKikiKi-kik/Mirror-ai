@@ -35,14 +35,14 @@ export default async function handler(req, res) {
       answer: response.text
     });
 
-  } catch (error) {
-    console.error("FULL GEMINI ERROR:", error);
+} catch (error) {
+  console.error(error);
 
-    return res.status(500).json({
-      error: String(error),
-      message: error?.message || null,
-      status: error?.status || null,
-      details: error?.error || null
-    });
-  }
+  return res.status(500).json({
+    error: "Gemini request failed",
+    status: error?.status ?? "unknown",
+    message: error?.message ?? "unknown",
+    name: error?.name ?? "unknown",
+    cause: error?.cause ?? null
+  });
 }
