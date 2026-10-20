@@ -83,7 +83,7 @@ async function sendMessage() {
     console.error(error);
 
     loading.querySelector(".bubble").textContent =
-      "Sorry, something went wrong. Please try again.";
+  `Ошибка: ${error.message}`;
 
   }
 
