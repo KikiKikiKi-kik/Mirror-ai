@@ -10,9 +10,34 @@ let currentChat = [];
 
 
 function renderMarkdown(element, text) {
-  const html = marked.parse(text);
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 
-  element.innerHTML = DOMPurify.sanitize(html);
+  html = html.replace(
+    /\*\*(.+?)\*\*/g,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /__(.+?)__/g,
+    "<strong>$1</strong>"
+  );
+
+  html = html.replace(
+    /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+    "<em>$1</em>"
+  );
+
+  html = html.replace(
+    /`([^`\n]+)`/g,
+    "<code>$1</code>"
+  );
+
+  html = html.replace(/\n/g, "<br>");
+
+  element.innerHTML = html;
 }
 
 
