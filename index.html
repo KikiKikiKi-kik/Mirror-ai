@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Mirror</title>
+
   <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 </head>
 
 <body>
 
   <div class="app">
 
-    <!-- Sidebar -->
     <aside class="sidebar">
 
       <div class="sidebar-top">
@@ -23,14 +27,16 @@
 
         <button class="new-chat" id="newChat">
           <span class="plus">＋</span>
-          <span>New chat</span>
+          <span>Новый чат</span>
         </button>
 
       </div>
 
       <div class="history">
 
-        <div class="history-title">Today</div>
+        <div class="history-title">
+          Сегодня
+        </div>
 
         <div id="historyList"></div>
 
@@ -39,7 +45,6 @@
     </aside>
 
 
-    <!-- Main -->
     <main class="main">
 
       <header class="topbar">
@@ -48,7 +53,9 @@
           ☰
         </button>
 
-        <span class="mobile-title">Mirror</span>
+        <span class="mobile-title">
+          Mirror
+        </span>
 
       </header>
 
@@ -59,9 +66,13 @@
 
           <div class="welcome" id="welcome">
 
-            <div class="welcome-mark">M</div>
+            <div class="welcome-mark">
+              M
+            </div>
 
-            <h1>How can I help you?</h1>
+            <h1>
+              Чем могу помочь?
+            </h1>
 
           </div>
 
@@ -74,14 +85,14 @@
 
             <textarea
               id="messageInput"
-              placeholder="Message Mirror"
+              placeholder="Сообщение Mirror"
               rows="1"
             ></textarea>
 
             <button
               id="sendButton"
               class="send-button"
-              aria-label="Send message"
+              aria-label="Отправить"
             >
               ↑
             </button>
@@ -89,7 +100,7 @@
           </div>
 
           <p class="disclaimer">
-            Mirror may make mistakes. Check important information.
+            Mirror может ошибаться. Проверяйте важную информацию.
           </p>
 
         </div>
