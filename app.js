@@ -12,8 +12,6 @@ const sendButton = document.getElementById("sendButton");
 const historyList = document.getElementById("historyList");
 
 const imagePanel = document.getElementById("imagePanel");
-const aspectButtons =
-  document.querySelectorAll(".aspect");
 
 const STORAGE_KEY = "mirror_chats_v1";
 
@@ -21,7 +19,6 @@ let chats = [];
 let currentChatId = null;
 let isGenerating = false;
 let imageMode = false;
-let selectedRatio = "1:1";
 
 
 /* =========================
@@ -102,10 +99,6 @@ function renderHistory() {
 
   historyList.innerHTML = "";
 
-  if (chats.length === 0) {
-    return;
-  }
-
   const sortedChats =
     [...chats].reverse();
 
@@ -131,7 +124,7 @@ function renderHistory() {
 
 
 /* =========================
-   WELCOME
+   ПРИВЕТСТВИЕ
 ========================= */
 
 function showWelcome() {
@@ -147,9 +140,7 @@ function showWelcome() {
   welcome.innerHTML = `
     <div class="welcome-mark">M</div>
 
-    <h1>
-      Чем могу помочь?
-    </h1>
+    <h1>Чем могу помочь?</h1>
 
     <p>
       Напиши сообщение или создай изображение
@@ -172,18 +163,18 @@ function newChat() {
 
   imagePanel.classList.remove("show");
 
+  imageModeButton.classList.remove("active");
+
   input.placeholder =
     "Сообщение Mirror";
 
-  showWelcome();
-
   input.value = "";
+
+  showWelcome();
 
   resizeInput();
 
   closeSidebar();
-
-  renderHistory();
 
   input.focus();
 }
@@ -222,7 +213,7 @@ function createChat(firstMessage) {
 
 
 /* =========================
-   ОТКРЫТИЕ ЧАТА
+   ОТКРЫТЬ ЧАТ
 ========================= */
 
 function openChat(chatId) {
@@ -243,10 +234,13 @@ function openChat(chatId) {
 
   imagePanel.classList.remove("show");
 
+  imageModeButton.classList.remove("active");
+
   input.placeholder =
     "Сообщение Mirror";
 
   messages.innerHTML = "";
+
 
   chat.messages.forEach(
     message => {
@@ -270,6 +264,7 @@ function openChat(chatId) {
     }
   );
 
+
   closeSidebar();
 
   scrollToBottom();
@@ -277,7 +272,7 @@ function openChat(chatId) {
 
 
 /* =========================
-   СООБЩЕНИЕ
+   ДОБАВИТЬ СООБЩЕНИЕ
 ========================= */
 
 function addMessage(
@@ -297,11 +292,13 @@ function addMessage(
         : "assistant"
     );
 
+
   const content =
     document.createElement("div");
 
   content.className =
     "message-content";
+
 
   if (role === "assistant") {
 
@@ -316,24 +313,23 @@ function addMessage(
       text;
   }
 
-  wrapper.appendChild(
-    content
-  );
 
-  messages.appendChild(
-    wrapper
-  );
+  wrapper.appendChild(content);
+
+  messages.appendChild(wrapper);
+
 
   if (scroll) {
     scrollToBottom();
   }
+
 
   return content;
 }
 
 
 /* =========================
-   КАРТИНКА В ЧАТЕ
+   ДОБАВИТЬ КАРТИНКУ
 ========================= */
 
 function addImageMessage(
@@ -348,6 +344,7 @@ function addImageMessage(
   wrapper.className =
     "message assistant image-message";
 
+
   const title =
     document.createElement("div");
 
@@ -357,9 +354,8 @@ function addImageMessage(
   title.textContent =
     "🖼️ " + prompt;
 
-  wrapper.appendChild(
-    title
-  );
+
+  wrapper.appendChild(title);
 
 
   const image =
@@ -374,9 +370,8 @@ function addImageMessage(
   image.alt =
     prompt;
 
-  wrapper.appendChild(
-    image
-  );
+
+  wrapper.appendChild(image);
 
 
   const download =
@@ -394,14 +389,11 @@ function addImageMessage(
   download.download =
     "mirror-image.png";
 
-  wrapper.appendChild(
-    download
-  );
 
+  wrapper.appendChild(download);
 
-  messages.appendChild(
-    wrapper
-  );
+  messages.appendChild(wrapper);
+
 
   if (scroll) {
     scrollToBottom();
@@ -424,11 +416,13 @@ function renderMarkdown(
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
 
+
   html =
     html.replace(
       /\*\*(.+?)\*\*/g,
       "<strong>$1</strong>"
     );
+
 
   html =
     html.replace(
@@ -436,11 +430,13 @@ function renderMarkdown(
       "<strong>$1</strong>"
     );
 
+
   html =
     html.replace(
       /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
       "<em>$1</em>"
     );
+
 
   html =
     html.replace(
@@ -448,11 +444,13 @@ function renderMarkdown(
       "<code>$1</code>"
     );
 
+
   html =
     html.replace(
       /^### (.+)$/gm,
       "<h3>$1</h3>"
     );
+
 
   html =
     html.replace(
@@ -460,11 +458,13 @@ function renderMarkdown(
       "<h2>$1</h2>"
     );
 
+
   html =
     html.replace(
       /^# (.+)$/gm,
       "<h1>$1</h1>"
     );
+
 
   html =
     html.replace(
@@ -472,11 +472,13 @@ function renderMarkdown(
       "• $1"
     );
 
+
   html =
     html.replace(
       /\n/g,
       "<br>"
     );
+
 
   element.innerHTML =
     html;
@@ -484,7 +486,7 @@ function renderMarkdown(
 
 
 /* =========================
-   ТЕКСТОВЫЙ ЧАТ
+   ОТПРАВКА СООБЩЕНИЯ
 ========================= */
 
 async function sendMessage() {
@@ -493,8 +495,10 @@ async function sendMessage() {
     return;
   }
 
+
   const text =
     input.value.trim();
+
 
   if (!text) {
     return;
@@ -509,10 +513,19 @@ async function sendMessage() {
   }
 
 
+  await sendChatMessage(text);
+}
+
+
+/* =========================
+   ОБЫЧНЫЙ ЧАТ
+========================= */
+
+async function sendChatMessage(text) {
+
   isGenerating = true;
 
-  sendButton.disabled =
-    true;
+  sendButton.disabled = true;
 
   input.value = "";
 
@@ -530,12 +543,12 @@ async function sendMessage() {
   const chat =
     getCurrentChat();
 
+
   if (!chat) {
 
     isGenerating = false;
 
-    sendButton.disabled =
-      false;
+    sendButton.disabled = false;
 
     return;
   }
@@ -547,6 +560,7 @@ async function sendMessage() {
 
     content: text
   });
+
 
   saveChats();
 
@@ -594,6 +608,7 @@ async function sendMessage() {
       let errorText =
         "Ошибка сервера";
 
+
       try {
 
         const errorData =
@@ -605,6 +620,7 @@ async function sendMessage() {
 
       } catch {}
 
+
       throw new Error(
         errorText
       );
@@ -614,7 +630,7 @@ async function sendMessage() {
     if (!response.body) {
 
       throw new Error(
-        "Сервер не вернул поток ответа"
+        "Сервер не вернул ответ"
       );
     }
 
@@ -622,10 +638,9 @@ async function sendMessage() {
     const reader =
       response.body.getReader();
 
+
     const decoder =
-      new TextDecoder(
-        "utf-8"
-      );
+      new TextDecoder("utf-8");
 
 
     while (true) {
@@ -635,6 +650,7 @@ async function sendMessage() {
         done
       } =
         await reader.read();
+
 
       if (done) {
         break;
@@ -700,11 +716,9 @@ async function sendMessage() {
 
   } finally {
 
-    isGenerating =
-      false;
+    isGenerating = false;
 
-    sendButton.disabled =
-      false;
+    sendButton.disabled = false;
 
     input.focus();
 
@@ -714,18 +728,145 @@ async function sendMessage() {
 
 
 /* =========================
-   ГЕНЕРАЦИЯ КАРТИНКИ
+   ОПРЕДЕЛЕНИЕ РАЗМЕРА
 ========================= */
 
-async function generateImage(
-  prompt
-) {
+function detectAspectRatio(text) {
 
-  isGenerating =
-    true;
+  const prompt =
+    text.toLowerCase();
 
-  sendButton.disabled =
-    true;
+
+  /* Явно указанный формат */
+
+  if (
+    /9\s*[:xх]\s*16/.test(prompt)
+  ) {
+    return "9:16";
+  }
+
+
+  if (
+    /16\s*[:xх]\s*9/.test(prompt)
+  ) {
+    return "16:9";
+  }
+
+
+  if (
+    /1\s*[:xх]\s*1/.test(prompt)
+  ) {
+    return "1:1";
+  }
+
+
+  if (
+    /3\s*[:xх]\s*4/.test(prompt)
+  ) {
+    return "3:4";
+  }
+
+
+  if (
+    /4\s*[:xх]\s*3/.test(prompt)
+  ) {
+    return "4:3";
+  }
+
+
+  if (
+    /2\s*[:xх]\s*3/.test(prompt)
+  ) {
+    return "2:3";
+  }
+
+
+  if (
+    /3\s*[:xх]\s*2/.test(prompt)
+  ) {
+    return "3:2";
+  }
+
+
+  if (
+    /4\s*[:xх]\s*5/.test(prompt)
+  ) {
+    return "4:5";
+  }
+
+
+  if (
+    /5\s*[:xх]\s*4/.test(prompt)
+  ) {
+    return "5:4";
+  }
+
+
+  if (
+    /21\s*[:xх]\s*9/.test(prompt)
+  ) {
+    return "21:9";
+  }
+
+
+  /* Вертикальное */
+
+  if (
+    prompt.includes("вертикальн") ||
+    prompt.includes("сторис") ||
+    prompt.includes("сториз") ||
+    prompt.includes("для телефона") ||
+    prompt.includes("на телефон") ||
+    prompt.includes("для тиктока") ||
+    prompt.includes("для tiktok") ||
+    prompt.includes("для shorts") ||
+    prompt.includes("для short") ||
+    prompt.includes("для reels") ||
+    prompt.includes("для instagram")
+  ) {
+    return "9:16";
+  }
+
+
+  /* Горизонтальное */
+
+  if (
+    prompt.includes("горизонтальн") ||
+    prompt.includes("широкоформат") ||
+    prompt.includes("для ютуба") ||
+    prompt.includes("для youtube") ||
+    prompt.includes("обложка youtube") ||
+    prompt.includes("баннер")
+  ) {
+    return "16:9";
+  }
+
+
+  /* Портрет */
+
+  if (
+    prompt.includes("портрет") ||
+    prompt.includes("портретное фото")
+  ) {
+    return "4:5";
+  }
+
+
+  /* По умолчанию */
+
+  return "1:1";
+}
+
+
+/* =========================
+   ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ
+========================= */
+
+async function generateImage(prompt) {
+
+  isGenerating = true;
+
+  sendButton.disabled = true;
 
   input.value = "";
 
@@ -738,21 +879,23 @@ async function generateImage(
   loading.className =
     "message assistant image-loading";
 
+
   loading.innerHTML = `
     <div class="loading-spinner"></div>
-    <div>
-      Создаю изображение…
-    </div>
+    <div>Создаю изображение…</div>
   `;
 
-  messages.appendChild(
-    loading
-  );
+
+  messages.appendChild(loading);
 
   scrollToBottom();
 
 
   try {
+
+    const aspectRatio =
+      detectAspectRatio(prompt);
+
 
     const response =
       await fetch(
@@ -768,8 +911,7 @@ async function generateImage(
           body:
             JSON.stringify({
               prompt: prompt,
-              aspectRatio:
-                selectedRatio
+              aspectRatio: aspectRatio
             })
         }
       );
@@ -779,6 +921,7 @@ async function generateImage(
 
       let errorText =
         "Не удалось создать изображение";
+
 
       try {
 
@@ -790,6 +933,7 @@ async function generateImage(
           errorText;
 
       } catch {}
+
 
       throw new Error(
         errorText
@@ -867,6 +1011,7 @@ async function generateImage(
 
     addMessage(
       "assistant",
+
       "Ошибка генерации: " +
       (
         error.message ||
@@ -883,13 +1028,13 @@ async function generateImage(
 
   } finally {
 
-    isGenerating =
-      false;
+    isGenerating = false;
 
-    sendButton.disabled =
-      false;
+    sendButton.disabled = false;
 
     input.focus();
+
+    scrollToBottom();
   }
 }
 
@@ -938,39 +1083,7 @@ function toggleImageMode() {
 
 
 /* =========================
-   ФОРМАТ
-========================= */
-
-aspectButtons.forEach(
-  button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        aspectButtons.forEach(
-          item =>
-            item.classList.remove(
-              "active"
-            )
-        );
-
-
-        button.classList.add(
-          "active"
-        );
-
-
-        selectedRatio =
-          button.dataset.ratio;
-      }
-    );
-  }
-);
-
-
-/* =========================
-   ВЫСОТА INPUT
+   РАЗМЕР ПОЛЯ
 ========================= */
 
 function resizeInput() {
@@ -987,7 +1100,7 @@ function resizeInput() {
 
 
 /* =========================
-   SCROLL
+   ПРОКРУТКА
 ========================= */
 
 function scrollToBottom() {
@@ -1006,25 +1119,30 @@ mobileMenu.addEventListener(
   toggleSidebar
 );
 
+
 closeMenu.addEventListener(
   "click",
   closeSidebar
 );
+
 
 newChatButton.addEventListener(
   "click",
   newChat
 );
 
+
 imageModeButton.addEventListener(
   "click",
   toggleImageMode
 );
 
+
 exitButton.addEventListener(
   "click",
   closeSidebar
 );
+
 
 sendButton.addEventListener(
   "click",
