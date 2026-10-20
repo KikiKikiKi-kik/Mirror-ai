@@ -3,28 +3,35 @@ const input = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 const newChatButton = document.getElementById("newChat");
 const historyList = document.getElementById("historyList");
-const welcome = document.getElementById("welcome");
 const mobileMenu = document.getElementById("mobileMenu");
 const sidebar = document.querySelector(".sidebar");
 
 let currentChat = [];
-let chats = [];
 
 
-/* =========================
-   SEND MESSAGE
-========================= */
+function renderMarkdown(element, text) {
+  const html = marked.parse(text);
+
+  element.innerHTML = DOMPurify.sanitize(html);
+}
+
 
 async function sendMessage() {
 
   const text = input.value.trim();
 
-  if (!text) return;
+  if (!text || sendButton.disabled) {
+    return;
+  }
 
   input.value = "";
   resizeInput();
 
-  welcome.style.display = "none";
+  const welcome = document.getElementById("welcome");
+
+  if (welcome) {
+    welcome.remove();
+  }
 
   addMessage("user", text);
 
@@ -35,50 +42,118 @@ async function sendMessage() {
 
   sendButton.disabled = true;
 
-  const loading = addMessage(
-    "mirror",
-    "Thinking..."
-  );
+  const loading = addMessage("mirror", "");
+
+  const bubble = loading.querySelector(".bubble");
+
+  bubble.classList.add("thinking");
+
+  bubble.textContent = "Думаю…";
+
 
   try {
 
     const response = await fetch("/api/chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message: text })
-});
 
-if (!response.ok) {
-  const errorText = await response.text();
-  throw new Error(errorText || "Request failed");
-}
+      method: "POST",
 
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
+      headers: {
+        "Content-Type": "application/json"
+      },
 
-let answer = "";
+      body: JSON.stringify({
+        message: text
+      })
 
-loading.querySelector(".bubble").textContent = "";
+    });
 
-while (true) {
-  const { value, done } = await reader.read();
 
-  if (done) break;
+    if (!response.ok) {
 
-  const chunk = decoder.decode(value, { stream: true });
+      const errorText = await response.text();
 
-  answer += chunk;
-  loading.querySelector(".bubble").textContent = answer;
+      throw new Error(
+        errorText || `HTTP ${response.status}`
+      );
 
-  scrollToBottom();
-}
+    }
 
-currentChat.push({
-  role: "mirror",
-  content: answer
-});
 
-updateHistory(text);
+    if (!response.body) {
+      throw new Error("Streaming is not supported");
+    }
+
+
+    const reader = response.body.getReader();
+
+    const decoder = new TextDecoder("utf-8");
+
+    let answer = "";
+
+    let firstChunk = true;
+
+
+    while (true) {
+
+      const { value, done } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+
+      const chunk = decoder.decode(value, {
+        stream: true
+      });
+
+
+      if (!chunk) {
+        continue;
+      }
+
+
+      answer += chunk;
+
+
+      if (firstChunk) {
+
+        bubble.classList.remove("thinking");
+
+        firstChunk = false;
+
+      }
+
+
+      renderMarkdown(bubble, answer);
+
+      scrollToBottom();
+
+    }
+
+
+    const lastChunk = decoder.decode();
+
+    if (lastChunk) {
+
+      answer += lastChunk;
+
+      renderMarkdown(bubble, answer);
+
+    }
+
+
+    if (!answer.trim()) {
+
+      bubble.textContent =
+        "Не удалось получить ответ.";
+
+    }
+
+
+    currentChat.push({
+      role: "mirror",
+      content: answer
+    });
 
 
     updateHistory(text);
@@ -88,21 +163,22 @@ updateHistory(text);
 
     console.error(error);
 
-    loading.querySelector(".bubble").textContent =
-  `Ошибка: ${error.message}`;
+    bubble.classList.remove("thinking");
+
+    bubble.textContent =
+      "Ошибка: " + error.message;
 
   }
 
 
   sendButton.disabled = false;
 
+  input.focus();
+
   scrollToBottom();
+
 }
 
-
-/* =========================
-   ADD MESSAGE
-========================= */
 
 function addMessage(role, text) {
 
@@ -116,7 +192,16 @@ function addMessage(role, text) {
 
   bubble.className = "bubble";
 
-  bubble.textContent = text;
+
+  if (role === "mirror" && text) {
+
+    renderMarkdown(bubble, text);
+
+  } else {
+
+    bubble.textContent = text;
+
+  }
 
 
   message.appendChild(bubble);
@@ -128,12 +213,9 @@ function addMessage(role, text) {
 
 
   return message;
+
 }
 
-
-/* =========================
-   SCROLL
-========================= */
 
 function scrollToBottom() {
 
@@ -149,36 +231,78 @@ function scrollToBottom() {
 }
 
 
-/* =========================
-   NEW CHAT
-========================= */
-
 function newChat() {
 
   currentChat = [];
 
   messages.innerHTML = "";
 
-  const newWelcome =
-    document.createElement("div");
 
-  newWelcome.className = "welcome";
+  const welcome = document.createElement("div");
 
-  newWelcome.id = "welcome";
+  welcome.className = "welcome";
 
-  newWelcome.innerHTML = `
-    <div class="welcome-mark">M</div>
+  welcome.id = "welcome";
 
-    <h1>How can I help you?</h1>
+
+  welcome.innerHTML = `
+
+    <div class="welcome-mark">
+      M
+    </div>
+
+    <h1>
+      Чем могу помочь?
+    </h1>
+
   `;
 
-  messages.appendChild(newWelcome);
+
+  messages.appendChild(welcome);
+
 
   input.value = "";
 
   resizeInput();
 
   input.focus();
+
+}
+
+
+function updateHistory(text) {
+
+  if (historyList.children.length > 0) {
+    return;
+  }
+
+
+  const item = document.createElement("div");
+
+  item.className = "history-item";
+
+
+  const title =
+    text.length > 32
+      ? text.substring(0, 32) + "..."
+      : text;
+
+
+  item.textContent = title;
+
+  historyList.appendChild(item);
+
+}
+
+
+function resizeInput() {
+
+  input.style.height = "auto";
+
+
+  input.style.height =
+    Math.min(input.scrollHeight, 180) + "px";
+
 }
 
 
@@ -188,37 +312,17 @@ newChatButton.addEventListener(
 );
 
 
-/* =========================
-   HISTORY
-========================= */
-
-function updateHistory(text) {
-
-  const title =
-    text.length > 30
-      ? text.substring(0, 30) + "..."
-      : text;
+sendButton.addEventListener(
+  "click",
+  sendMessage
+);
 
 
-  if (historyList.children.length === 0) {
+input.addEventListener(
+  "input",
+  resizeInput
+);
 
-    const item =
-      document.createElement("div");
-
-    item.className = "history-item";
-
-    item.textContent = title;
-
-    historyList.appendChild(item);
-
-  }
-
-}
-
-
-/* =========================
-   ENTER
-========================= */
 
 input.addEventListener(
   "keydown",
@@ -239,40 +343,6 @@ input.addEventListener(
 );
 
 
-/* =========================
-   AUTO RESIZE
-========================= */
-
-input.addEventListener(
-  "input",
-  resizeInput
-);
-
-
-function resizeInput() {
-
-  input.style.height = "auto";
-
-  input.style.height =
-    Math.min(input.scrollHeight, 180) + "px";
-
-}
-
-
-/* =========================
-   SEND BUTTON
-========================= */
-
-sendButton.addEventListener(
-  "click",
-  sendMessage
-);
-
-
-/* =========================
-   MOBILE MENU
-========================= */
-
 mobileMenu.addEventListener(
   "click",
   () => {
@@ -282,9 +352,5 @@ mobileMenu.addEventListener(
   }
 );
 
-
-/* =========================
-   START
-========================= */
 
 input.focus();
