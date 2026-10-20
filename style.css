@@ -575,3 +575,36 @@ textarea::placeholder {
     max-width: 85%;
   }
 }
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.history {
+  flex: 1;
+}
+
+.sidebar-bottom {
+  padding: 12px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.exit-button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  text-align: left;
+}
+
+.exit-button:hover {
+  background: #ececef;
+}
