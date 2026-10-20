@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mirror</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <div class="sidebar-top">
+
+        <div class="brand">
+          <span class="brand-mark">M</span>
+          <span>Mirror</span>
+        </div>
+
+        <button class="new-chat" id="newChat">
+          <span class="plus">＋</span>
+          <span>New chat</span>
+        </button>
+
+      </div>
+
+      <div class="history">
+
+        <div class="history-title">Today</div>
+
+        <div id="historyList"></div>
+
+      </div>
+
+    </aside>
+
+
+    <!-- Main -->
+    <main class="main">
+
+      <header class="topbar">
+
+        <button class="mobile-menu" id="mobileMenu">
+          ☰
+        </button>
+
+        <span class="mobile-title">Mirror</span>
+
+      </header>
+
+
+      <section class="chat">
+
+        <div class="messages" id="messages">
+
+          <div class="welcome" id="welcome">
+
+            <div class="welcome-mark">M</div>
+
+            <h1>How can I help you?</h1>
+
+          </div>
+
+        </div>
+
+
+        <div class="composer-area">
+
+          <div class="composer">
+
+            <textarea
+              id="messageInput"
+              placeholder="Message Mirror"
+              rows="1"
+            ></textarea>
+
+            <button
+              id="sendButton"
+              class="send-button"
+              aria-label="Send message"
+            >
+              ↑
+            </button>
+
+          </div>
+
+          <p class="disclaimer">
+            Mirror may make mistakes. Check important information.
+          </p>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <script src="app.js"></script>
+
+</body>
+</html>
