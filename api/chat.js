@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
-        error: "GEMINI_API_KEY is missing"
+        error: "GEMINI_API_KEY is missing in Vercel"
       });
     }
 
@@ -35,14 +35,12 @@ export default async function handler(req, res) {
       answer: response.text
     });
 
-} catch (error) {
-  console.error(error);
+  } catch (error) {
+    console.error("FULL GEMINI ERROR:", error);
 
-  return res.status(500).json({
-    error: "Gemini request failed",
-    status: error?.status ?? "unknown",
-    message: error?.message ?? "unknown",
-    name: error?.name ?? "unknown",
-    cause: error?.cause ?? null
-  });
+    return res.status(500).json({
+      error: error.message || "Unknown Gemini error",
+      status: error.status || null
+    });
+  }
 }
