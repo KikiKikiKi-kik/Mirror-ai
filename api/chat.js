@@ -30,7 +30,13 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("Mirror API error:", error);
+  console.error("Mirror API error:", error);
+
+  return res.status(500).json({
+    error: error.message || "Unknown Gemini error",
+    details: error.error || null
+  });
+}
 
     return res.status(500).json({
       error: "Mirror failed to generate a response."
