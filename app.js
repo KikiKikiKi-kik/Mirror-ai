@@ -59,10 +59,8 @@ async function sendMessage() {
 
 
     if (!response.ok) {
-      throw new Error(
-        data.error || "Request failed"
-      );
-    }
+  throw new Error(JSON.stringify(data, null, 2));
+}
 
 
     loading.querySelector(".bubble").textContent =
