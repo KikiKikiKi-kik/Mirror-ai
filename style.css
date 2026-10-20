@@ -17,10 +17,20 @@ body {
   overflow: hidden;
 }
 
+button,
+textarea {
+  font-family: inherit;
+}
+
 .app {
   width: 100%;
   height: 100%;
 }
+
+
+/* =========================
+   SIDEBAR
+========================= */
 
 .sidebar {
   position: fixed;
@@ -48,23 +58,29 @@ body {
 
 .sidebar-header {
   height: 60px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   padding: 0 15px;
 }
 
 .brand {
   display: flex;
   align-items: center;
+
   gap: 8px;
+
   font-weight: 600;
 }
 
 .brand-mark {
   width: 30px;
   height: 30px;
+
   border-radius: 8px;
+
   background: #111;
   color: white;
 
@@ -76,15 +92,23 @@ body {
 .close-menu {
   border: 0;
   background: transparent;
+
   font-size: 28px;
+
   cursor: pointer;
 }
+
+
+/* =========================
+   SIDEBAR BUTTONS
+========================= */
 
 .sidebar-top {
   padding: 10px;
 }
 
-.new-chat {
+.new-chat,
+.code-mode {
   width: 100%;
   height: 44px;
 
@@ -94,29 +118,75 @@ body {
   background: white;
 
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0 12px;
+
+  font-size: 14px;
+
+  margin-bottom: 8px;
+
+  transition: 0.15s ease;
 }
+
+.new-chat:hover,
+.code-mode:hover {
+  background: #f0f0f0;
+}
+
+.code-mode.active {
+  background: #111;
+  color: white;
+  border-color: #111;
+}
+
+.code-mode span:first-child {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+
+/* =========================
+   HISTORY
+========================= */
 
 .history {
   flex: 1;
+
   overflow-y: auto;
+
   padding: 10px;
 }
 
 .history-title {
   font-size: 12px;
   color: #777;
+
   margin-bottom: 6px;
 }
 
 .history-item {
   padding: 9px;
+
   border-radius: 8px;
+
   cursor: pointer;
+
+  font-size: 14px;
 }
 
 .history-item:hover {
   background: #e9e9e9;
 }
+
+
+/* =========================
+   SIDEBAR BOTTOM
+========================= */
 
 .sidebar-bottom {
   padding: 10px;
@@ -125,13 +195,26 @@ body {
 .exit-button {
   width: 100%;
   height: 42px;
+
   border: 0;
+
   background: transparent;
+
   cursor: pointer;
+
   text-align: left;
+
+  border-radius: 8px;
 }
 
-/* MAIN */
+.exit-button:hover {
+  background: #e9e9e9;
+}
+
+
+/* =========================
+   MAIN
+========================= */
 
 .main {
   width: 100%;
@@ -142,6 +225,7 @@ body {
 
 .topbar {
   position: absolute;
+
   top: 0;
   left: 0;
   right: 0;
@@ -170,8 +254,14 @@ body {
 
 .mobile-title {
   margin-left: 8px;
+
   font-weight: 600;
 }
+
+
+/* =========================
+   CHAT
+========================= */
 
 .chat {
   width: 100%;
@@ -188,6 +278,11 @@ body {
 
   padding: 70px 15px 140px;
 }
+
+
+/* =========================
+   WELCOME
+========================= */
 
 .welcome {
   height: 100%;
@@ -221,10 +316,20 @@ body {
 
 .welcome h1 {
   font-size: 24px;
-  margin: 0;
+
+  margin: 0 0 8px;
 }
 
-/* MESSAGES */
+.welcome p {
+  margin: 0;
+
+  color: #777;
+}
+
+
+/* =========================
+   MESSAGES
+========================= */
 
 .message {
   width: 100%;
@@ -243,13 +348,185 @@ body {
 
 .message.user .message-content {
   background: #f0f0f0;
+
   padding: 10px 14px;
+
   border-radius: 17px;
 
   max-width: 85%;
+
+  white-space: pre-wrap;
 }
 
-/* INPUT */
+.message.assistant .message-content {
+  width: 100%;
+}
+
+
+/* =========================
+   CODE BLOCK
+========================= */
+
+.code-block {
+  position: relative;
+
+  margin: 14px 0;
+
+  padding: 0;
+
+  background: #f5f5f5;
+
+  border: 1px solid #ddd;
+
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  text-align: left;
+
+  white-space: pre;
+
+  max-width: 100%;
+
+  overflow-x: auto;
+}
+
+.code-header {
+  height: 38px;
+
+  background: #eaeaea;
+
+  border-bottom: 1px solid #ddd;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 0 10px;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 12px;
+
+  color: #666;
+}
+
+.copy-code {
+  border: 0;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  padding: 6px 9px;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+
+  color: #555;
+}
+
+.copy-code:hover {
+  background: #ddd;
+}
+
+.code-content {
+  display: block;
+
+  padding: 13px;
+
+  overflow-x: auto;
+
+  white-space: pre;
+
+  color: #111;
+}
+
+
+/* =========================
+   INLINE CODE
+========================= */
+
+.inline-code {
+  background: #f0f0f0;
+
+  border: 1px solid #ddd;
+
+  border-radius: 5px;
+
+  padding: 1px 5px;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    monospace;
+
+  font-size: 0.9em;
+}
+
+
+/* =========================
+   HEADINGS
+========================= */
+
+.message h1,
+.message h2,
+.message h3 {
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+
+/* =========================
+   MODE INDICATOR
+========================= */
+
+.mode-indicator {
+  display: none;
+
+  width: 100%;
+  max-width: 760px;
+
+  margin: 0 auto 7px;
+
+  padding: 0 8px;
+
+  font-size: 12px;
+
+  color: #666;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+.mode-indicator.show {
+  display: flex;
+}
+
+.mode-indicator span:first-child {
+  font-family: monospace;
+
+  font-weight: bold;
+}
+
+
+/* =========================
+   COMPOSER
+========================= */
 
 .composer-area {
   position: absolute;
@@ -259,6 +536,7 @@ body {
   bottom: 0;
 
   padding: 10px;
+
   background: white;
 }
 
@@ -274,6 +552,7 @@ body {
   align-items: flex-end;
 
   border: 1px solid #ddd;
+
   border-radius: 17px;
 
   padding: 5px 7px 5px 12px;
@@ -290,9 +569,12 @@ body {
   resize: none;
 
   font-family: inherit;
+
   font-size: 16px;
 
   padding: 8px 4px;
+
+  background: transparent;
 }
 
 .send-button {
@@ -300,6 +582,7 @@ body {
   height: 38px;
 
   border: 0;
+
   border-radius: 50%;
 
   background: #111;
@@ -310,18 +593,29 @@ body {
   cursor: pointer;
 }
 
+.send-button:disabled {
+  opacity: 0.5;
+
+  cursor: default;
+}
+
 .disclaimer {
   text-align: center;
 
   font-size: 10px;
+
   color: #888;
 
   margin: 6px 0 0;
 }
 
-/* PHONE */
+
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 700px) {
+
   .sidebar {
     width: 280px;
     max-width: 82vw;
@@ -340,17 +634,30 @@ body {
   .composer-area {
     padding: 7px;
   }
+
+  .code-block {
+    font-size: 12px;
+  }
+
+  .message {
+    font-size: 15px;
+  }
 }
 
-/* PC */
+
+/* =========================
+   DESKTOP
+========================= */
 
 @media (min-width: 701px) {
+
   .sidebar {
     transform: translateX(0);
   }
 
   .main {
     margin-left: 260px;
+
     width: calc(100% - 260px);
   }
 
