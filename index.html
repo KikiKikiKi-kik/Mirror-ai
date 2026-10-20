@@ -2,155 +2,138 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+name=“viewport”
+content=“width=device-width, initial-scale=1.0”
 
   <title>Mirror</title>
-
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
-
 <body>
-
   <div class="app">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-
-      <div class="sidebar-top">
-
-        <div class="brand">
-          <span class="brand-mark">M</span>
-          <span>Mirror</span>
-        </div>
-
-        <button
-          class="new-chat"
-          id="newChat"
-          type="button"
-        >
-          <span class="plus">＋</span>
-          <span>Новый чат</span>
-        </button>
-
-      </div>
-
-
-      <!-- CHAT HISTORY -->
-      <div class="history">
-
-        <div class="history-title">
-          Сегодня
-        </div>
-
-        <div id="historyList"></div>
-
-      </div>
-
-
-      <!-- SIDEBAR BOTTOM -->
-      <div class="sidebar-bottom">
-
-        <button
-          class="exit-button"
-          id="exitButton"
-          type="button"
-        >
-          <span>↪</span>
-          <span>Выйти</span>
-        </button>
-
-      </div>
-
-    </aside>
-
-
-    <!-- MAIN -->
-    <main class="main">
-
-      <!-- TOP BAR -->
-      <header class="topbar">
-
-        <button
-          class="mobile-menu"
-          id="mobileMenu"
-          type="button"
-          aria-label="Открыть меню"
-        >
-          ☰
-        </button>
-
-        <span class="mobile-title">
-          Mirror
-        </span>
-
-      </header>
-
-
-      <!-- CHAT -->
-      <section class="chat">
-
-        <div
-          class="messages"
-          id="messages"
-        >
-
-          <!-- WELCOME -->
-          <div
-            class="welcome"
-            id="welcome"
-          >
-
-            <div class="welcome-mark">
-              M
-            </div>
-
-            <h1>
-              Чем могу помочь?
-            </h1>
-
-          </div>
-
-        </div>
-
-
-        <!-- COMPOSER -->
-        <div class="composer-area">
-
-          <div class="composer">
-
-            <textarea
-              id="messageInput"
-              placeholder="Сообщение Mirror"
-              rows="1"
-              autocomplete="off"
-            ></textarea>
-
-            <button
-              id="sendButton"
-              class="send-button"
-              type="button"
-              aria-label="Отправить сообщение"
-            >
-              ↑
-            </button>
-
-          </div>
-
-          <p class="disclaimer">
-            Mirror может ошибаться. Проверяйте важную информацию.
-          </p>
-
-        </div>
-
-      </section>
-
-    </main>
-
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <!-- SIDEBAR HEADER -->
+  <div class="sidebar-header">
+    <div class="brand">
+      <span class="brand-mark">
+        M
+      </span>
+      <span>
+        Mirror
+      </span>
+    </div>
+    <!-- КНОПКА ЗАКРЫТИЯ -->
+    <button
+      id="closeMenu"
+      class="close-menu"
+      type="button"
+      aria-label="Закрыть меню"
+    >
+      ×
+    </button>
   </div>
-
-
-  <!-- APP -->
+  <!-- SIDEBAR TOP -->
+  <div class="sidebar-top">
+    <button
+      class="new-chat"
+      id="newChat"
+      type="button"
+    >
+      <span class="plus">
+        ＋
+      </span>
+      <span>
+        Новый чат
+      </span>
+    </button>
+  </div>
+  <!-- HISTORY -->
+  <div class="history">
+    <div class="history-title">
+      Сегодня
+    </div>
+    <div id="historyList"></div>
+  </div>
+  <!-- BOTTOM -->
+  <div class="sidebar-bottom">
+    <button
+      class="exit-button"
+      id="exitButton"
+      type="button"
+    >
+      <span>
+        ↪
+      </span>
+      <span>
+        Выйти
+      </span>
+    </button>
+  </div>
+</aside>
+<!-- MAIN -->
+<main class="main">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button
+      class="mobile-menu"
+      id="mobileMenu"
+      type="button"
+      aria-label="Открыть меню"
+    >
+      ☰
+    </button>
+    <span class="mobile-title">
+      Mirror
+    </span>
+  </header>
+  <!-- CHAT -->
+  <section class="chat">
+    <div
+      class="messages"
+      id="messages"
+    >
+      <div
+        class="welcome"
+        id="welcome"
+      >
+        <div class="welcome-mark">
+          M
+        </div>
+        <h1>
+          Чем могу помочь?
+        </h1>
+      </div>
+    </div>
+    <!-- COMPOSER -->
+    <div class="composer-area">
+      <div class="composer">
+        <textarea
+          id="messageInput"
+          placeholder="Сообщение Mirror"
+          rows="1"
+          autocomplete="off"
+        ></textarea>
+        <button
+          id="sendButton"
+          class="send-button"
+          type="button"
+          aria-label="Отправить сообщение"
+        >
+          ↑
+        </button>
+      </div>
+      <p class="disclaimer">
+        Mirror может ошибаться. Проверяйте важную информацию.
+      </p>
+    </div>
+  </section>
+</main>
+  </div>
   <script src="app.js"></script>
-
 </body>
 </html>
