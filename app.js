@@ -14,12 +14,21 @@ const historyList = document.getElementById("historyList");
 const mobileTitle = document.getElementById("mobileTitle");
 const modeIndicator = document.getElementById("modeIndicator");
 
+const imageButton = document.getElementById("imageButton");
+const imageInput = document.getElementById("imageInput");
+const imagePreview = document.getElementById("imagePreview");
+const previewImage = document.getElementById("previewImage");
+const removeImageButton = document.getElementById("removeImage");
+
+
 const STORAGE_KEY = "mirror_chats_v1";
 
 let chats = [];
 let currentChatId = null;
 let isGenerating = false;
 let codeMode = false;
+
+let selectedImage = null;
 
 
 /* =========================
@@ -85,13 +94,11 @@ function getCurrentChat() {
 ========================= */
 
 function closeSidebar() {
-
   sidebar.classList.remove("open");
 }
 
 
 function toggleSidebar() {
-
   sidebar.classList.toggle("open");
 }
 
@@ -117,12 +124,10 @@ function renderHistory() {
       item.textContent =
         chat.title || "Новый чат";
 
-
       item.addEventListener(
         "click",
         () => openChat(chat.id)
       );
-
 
       historyList.appendChild(item);
     });
@@ -137,13 +142,11 @@ function showWelcome() {
 
   messages.innerHTML = "";
 
-
   const welcome =
     document.createElement("div");
 
   welcome.className =
     "welcome";
-
 
   if (codeMode) {
 
@@ -169,7 +172,6 @@ function showWelcome() {
       </p>
     `;
   }
-
 
   messages.appendChild(welcome);
 }
@@ -220,18 +222,10 @@ function toggleCodeMode() {
 
   codeMode = !codeMode;
 
-
   updateModeUI();
-
-
-  /*
-    Если открыт чат — сохраняем
-    выбранный режим в этом чате.
-  */
 
   const chat =
     getCurrentChat();
-
 
   if (chat) {
 
@@ -243,17 +237,9 @@ function toggleCodeMode() {
     saveChats();
   }
 
-
-  /*
-    Если текущий экран — приветствие,
-    обновляем его.
-  */
-
   if (!currentChatId) {
-
     showWelcome();
   }
-
 
   input.focus();
 }
@@ -268,6 +254,8 @@ function newChat() {
   currentChatId = null;
 
   input.value = "";
+
+  removeSelectedImage();
 
   resizeInput();
 
@@ -303,17 +291,14 @@ function createChat(firstMessage) {
     messages: []
   };
 
-
   chats.push(chat);
 
   currentChatId =
     chat.id;
 
-
   saveChats();
 
   renderHistory();
-
 
   return chat;
 }
@@ -330,25 +315,19 @@ function openChat(chatId) {
       item => item.id === chatId
     );
 
-
   if (!chat) {
     return;
   }
 
-
   currentChatId =
     chat.id;
-
 
   codeMode =
     chat.mode === "code";
 
-
   updateModeUI();
 
-
   messages.innerHTML = "";
-
 
   chat.messages.forEach(
     message => {
@@ -356,11 +335,13 @@ function openChat(chatId) {
       addMessage(
         message.role,
         message.content,
-        false
+        false,
+        message.image || null
       );
     }
   );
 
+  removeSelectedImage();
 
   closeSidebar();
 
@@ -377,12 +358,12 @@ function openChat(chatId) {
 function addMessage(
   role,
   text,
-  scroll = true
+  scroll = true,
+  image = null
 ) {
 
   const wrapper =
     document.createElement("div");
-
 
   wrapper.className =
     "message " +
@@ -392,33 +373,65 @@ function addMessage(
         : "assistant"
     );
 
-
   const content =
     document.createElement("div");
-
 
   content.className =
     "message-content";
 
 
+  if (image) {
+
+    const img =
+      document.createElement("img");
+
+    img.className =
+      "message-image";
+
+    img.src =
+      image;
+
+    img.alt =
+      "Изображение";
+
+    content.appendChild(img);
+  }
+
+
   if (role === "assistant") {
 
+    const textContainer =
+      document.createElement("div");
+
     renderMarkdown(
-      content,
-      text
+      textContainer,
+      text || ""
+    );
+
+    content.appendChild(
+      textContainer
     );
 
   } else {
 
-    content.textContent =
-      text;
+    if (text) {
+
+      const textContainer =
+        document.createElement("div");
+
+      textContainer.textContent =
+        text;
+
+      content.appendChild(
+        textContainer
+      );
+    }
   }
 
 
   wrapper.appendChild(
     content
   );
-
 
   messages.appendChild(
     wrapper
@@ -456,14 +469,7 @@ function renderMarkdown(
   text
 ) {
 
-  /*
-    Сначала отдельно вытаскиваем
-    блоки кода, чтобы Markdown
-    внутри кода не ломался.
-  */
-
   const codeBlocks = [];
-
 
   let safeText =
     text.replace(
@@ -473,8 +479,8 @@ function renderMarkdown(
         const index =
           codeBlocks.length;
 
-
         codeBlocks.push({
+
           language:
             language || "code",
 
@@ -485,25 +491,16 @@ function renderMarkdown(
             )
         });
 
-
         return `@@CODE_BLOCK_${index}@@`;
       }
     );
 
-
-  /*
-    Экранируем обычный текст.
-  */
 
   let html =
     escapeHtml(
       safeText
     );
 
-
-  /*
-    Жирный текст.
-  */
 
   html =
     html.replace(
@@ -519,10 +516,6 @@ function renderMarkdown(
     );
 
 
-  /*
-    Курсив.
-  */
-
   html =
     html.replace(
       /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
@@ -530,20 +523,12 @@ function renderMarkdown(
     );
 
 
-  /*
-    Inline code.
-  */
-
   html =
     html.replace(
       /`([^`\n]+)`/g,
       "<code class=\"inline-code\">$1</code>"
     );
 
-
-  /*
-    Заголовки.
-  */
 
   html =
     html.replace(
@@ -566,20 +551,12 @@ function renderMarkdown(
     );
 
 
-  /*
-    Списки.
-  */
-
   html =
     html.replace(
       /^- (.+)$/gm,
       "• $1"
     );
 
-
-  /*
-    Переносы строк.
-  */
 
   html =
     html.replace(
@@ -588,22 +565,16 @@ function renderMarkdown(
     );
 
 
-  /*
-    Возвращаем блоки кода.
-  */
-
   codeBlocks.forEach(
     (block, index) => {
 
       const marker =
         `@@CODE_BLOCK_${index}@@`;
 
-
       const escapedCode =
         escapeHtml(
           block.code
         );
-
 
       const codeHtml = `
         <pre class="code-block">
@@ -627,7 +598,6 @@ function renderMarkdown(
         </pre>
       `;
 
-
       html =
         html.replace(
           marker,
@@ -640,10 +610,6 @@ function renderMarkdown(
   element.innerHTML =
     html;
 
-
-  /*
-    Подключаем кнопки копирования.
-  */
 
   const buttons =
     element.querySelectorAll(
@@ -663,15 +629,12 @@ function renderMarkdown(
               button.dataset.codeIndex
             );
 
-
           const block =
             codeBlocks[index];
-
 
           if (!block) {
             return;
           }
-
 
           try {
 
@@ -679,50 +642,35 @@ function renderMarkdown(
               block.code
             );
 
-
             const oldText =
               button.textContent;
-
 
             button.textContent =
               "Скопировано";
 
-
             setTimeout(
               () => {
-
                 button.textContent =
                   oldText;
-
               },
               1500
             );
 
-
-          } catch (error) {
-
-            /*
-              Запасной способ
-              для старых браузеров.
-            */
+          } catch {
 
             const textarea =
               document.createElement(
                 "textarea"
               );
 
-
             textarea.value =
               block.code;
-
 
             document.body.appendChild(
               textarea
             );
 
-
             textarea.select();
-
 
             try {
 
@@ -730,17 +678,13 @@ function renderMarkdown(
                 "copy"
               );
 
-
               button.textContent =
                 "Скопировано";
 
-
               setTimeout(
                 () => {
-
                   button.textContent =
                     "Копировать";
-
                 },
                 1500
               );
@@ -751,12 +695,108 @@ function renderMarkdown(
                 "Не удалось скопировать";
             }
 
-
             textarea.remove();
           }
         }
       );
     }
+  );
+}
+
+
+/* =========================
+   КАРТИНКА
+========================= */
+
+imageButton.addEventListener(
+  "click",
+  () => {
+
+    if (isGenerating) {
+      return;
+    }
+
+    imageInput.click();
+  }
+);
+
+
+imageInput.addEventListener(
+  "change",
+  () => {
+
+    const file =
+      imageInput.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+
+    if (!file.type.startsWith("image/")) {
+
+      alert(
+        "Можно выбрать только изображение."
+      );
+
+      imageInput.value = "";
+
+      return;
+    }
+
+
+    const reader =
+      new FileReader();
+
+
+    reader.onload = () => {
+
+      selectedImage = {
+
+        name:
+          file.name,
+
+        type:
+          file.type,
+
+        data:
+          reader.result
+      };
+
+
+      previewImage.src =
+        reader.result;
+
+      imagePreview.classList.add(
+        "show"
+      );
+    };
+
+
+    reader.readAsDataURL(file);
+  }
+);
+
+
+removeImageButton.addEventListener(
+  "click",
+  removeSelectedImage
+);
+
+
+function removeSelectedImage() {
+
+  selectedImage =
+    null;
+
+  imageInput.value =
+    "";
+
+  previewImage.src =
+    "";
+
+  imagePreview.classList.remove(
+    "show"
   );
 }
 
@@ -776,7 +816,7 @@ async function sendMessage() {
     input.value.trim();
 
 
-  if (!text) {
+  if (!text && !selectedImage) {
     return;
   }
 
@@ -800,22 +840,32 @@ async function sendChatMessage(
   sendButton.disabled =
     true;
 
+  imageButton.disabled =
+    true;
+
 
   input.value = "";
 
   resizeInput();
 
 
-  /*
-    Если чат ещё не создан,
-    создаём его с текущим режимом.
-  */
+  const imageForMessage =
+    selectedImage
+      ? selectedImage.data
+      : null;
+
+
+  removeSelectedImage();
+
 
   if (!currentChatId) {
 
     showWelcome();
 
-    createChat(text);
+    createChat(
+      text ||
+      "Изображение"
+    );
   }
 
 
@@ -830,13 +880,12 @@ async function sendChatMessage(
     sendButton.disabled =
       false;
 
+    imageButton.disabled =
+      false;
+
     return;
   }
 
-
-  /*
-    Сохраняем режим чата.
-  */
 
   chat.mode =
     codeMode
@@ -848,7 +897,11 @@ async function sendChatMessage(
 
     role: "user",
 
-    content: text
+    content:
+      text,
+
+    image:
+      imageForMessage
   });
 
 
@@ -857,7 +910,9 @@ async function sendChatMessage(
 
   addMessage(
     "user",
-    text
+    text,
+    true,
+    imageForMessage
   );
 
 
@@ -895,8 +950,10 @@ async function sendChatMessage(
               mode:
                 codeMode
                   ? "code"
-                  : "normal"
+                  : "normal",
 
+              image:
+                imageForMessage
             })
         }
       );
@@ -982,10 +1039,6 @@ async function sendChatMessage(
     }
 
 
-    /*
-      Сохраняем ответ.
-    */
-
     chat.messages.push({
 
       role: "assistant",
@@ -1027,6 +1080,9 @@ async function sendChatMessage(
     sendButton.disabled =
       false;
 
+    imageButton.disabled =
+      false;
+
     input.focus();
 
     scrollToBottom();
@@ -1042,7 +1098,6 @@ function resizeInput() {
 
   input.style.height =
     "auto";
-
 
   input.style.height =
     Math.min(
