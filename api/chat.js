@@ -1,9 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -14,11 +10,21 @@ export default async function handler(req, res) {
   try {
     const { message } = req.body;
 
-    if (!message || typeof message !== "string") {
+    if (!message) {
       return res.status(400).json({
-        error: "Message is required"
+        error: "Message is empty"
       });
     }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({
+        error: "GEMINI_API_KEY is missing"
+      });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY
+    });
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
@@ -30,16 +36,13 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-  console.error("Mirror API error:", error);
-
-  return res.status(500).json({
-    error: error.message || "Unknown Gemini error",
-    details: error.error || null
-  });
-}
+    console.error("FULL GEMINI ERROR:", error);
 
     return res.status(500).json({
-      error: "Mirror failed to generate a response."
+      error: String(error),
+      message: error?.message || null,
+      status: error?.status || null,
+      details: error?.error || null
     });
   }
 }
