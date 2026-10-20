@@ -3,6 +3,7 @@ const mobileMenu = document.getElementById("mobileMenu");
 const closeMenu = document.getElementById("closeMenu");
 
 const newChatButton = document.getElementById("newChat");
+const codeModeButton = document.getElementById("codeMode");
 const exitButton = document.getElementById("exitButton");
 
 const messages = document.getElementById("messages");
@@ -10,11 +11,15 @@ const input = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 const historyList = document.getElementById("historyList");
 
+const mobileTitle = document.getElementById("mobileTitle");
+const modeIndicator = document.getElementById("modeIndicator");
+
 const STORAGE_KEY = "mirror_chats_v1";
 
 let chats = [];
 let currentChatId = null;
 let isGenerating = false;
+let codeMode = false;
 
 
 /* =========================
@@ -62,11 +67,6 @@ function getCurrentChat() {
 /* =========================
    МЕНЮ
 ========================= */
-
-function openSidebar() {
-  sidebar.classList.add("open");
-}
-
 
 function closeSidebar() {
   sidebar.classList.remove("open");
@@ -117,15 +117,87 @@ function showWelcome() {
 
   welcome.className = "welcome";
 
-  welcome.innerHTML = `
-    <div class="welcome-mark">M</div>
 
-    <h1>Чем могу помочь?</h1>
+  if (codeMode) {
 
-    <p>Напиши сообщение Mirror</p>
-  `;
+    welcome.innerHTML = `
+      <div class="welcome-mark">&lt;/&gt;</div>
+
+      <h1>Mirror Code</h1>
+
+      <p>
+        Чем помочь с кодом?
+      </p>
+    `;
+
+  } else {
+
+    welcome.innerHTML = `
+      <div class="welcome-mark">M</div>
+
+      <h1>Чем могу помочь?</h1>
+
+      <p>
+        Напиши сообщение Mirror
+      </p>
+    `;
+  }
+
 
   messages.appendChild(welcome);
+}
+
+
+/* =========================
+   CODE MODE
+========================= */
+
+function updateModeUI() {
+
+  if (codeMode) {
+
+    codeModeButton.classList.add("active");
+
+    modeIndicator.classList.add("show");
+
+    input.placeholder =
+      "Сообщение Mirror Code";
+
+    mobileTitle.textContent =
+      "Mirror Code";
+
+  } else {
+
+    codeModeButton.classList.remove("active");
+
+    modeIndicator.classList.remove("show");
+
+    input.placeholder =
+      "Сообщение Mirror";
+
+    mobileTitle.textContent =
+      "Mirror";
+  }
+}
+
+
+function toggleCodeMode() {
+
+  codeMode = !codeMode;
+
+  currentChatId = null;
+
+  input.value = "";
+
+  resizeInput();
+
+  updateModeUI();
+
+  showWelcome();
+
+  closeSidebar();
+
+  input.focus();
 }
 
 
@@ -139,11 +211,9 @@ function newChat() {
 
   input.value = "";
 
-  input.placeholder = "Сообщение Mirror";
+  resizeInput();
 
   showWelcome();
-
-  resizeInput();
 
   closeSidebar();
 
@@ -166,8 +236,14 @@ function createChat(firstMessage) {
         ? firstMessage.slice(0, 40) + "..."
         : firstMessage,
 
+    mode:
+      codeMode
+        ? "code"
+        : "normal",
+
     messages: []
   };
+
 
   chats.push(chat);
 
@@ -195,13 +271,19 @@ function openChat(chatId) {
     return;
   }
 
+
   currentChatId = chat.id;
 
-  input.value = "";
 
-  input.placeholder = "Сообщение Mirror";
+  codeMode =
+    chat.mode === "code";
+
+
+  updateModeUI();
+
 
   messages.innerHTML = "";
+
 
   chat.messages.forEach(message => {
 
@@ -213,6 +295,7 @@ function openChat(chatId) {
 
   });
 
+
   closeSidebar();
 
   scrollToBottom();
@@ -222,7 +305,7 @@ function openChat(chatId) {
 
 
 /* =========================
-   ДОБАВИТЬ СООБЩЕНИЕ
+   СООБЩЕНИЕ
 ========================= */
 
 function addMessage(
@@ -281,10 +364,7 @@ function addMessage(
    MARKDOWN
 ========================= */
 
-function renderMarkdown(
-  element,
-  text
-) {
+function renderMarkdown(element, text) {
 
   let html =
     text
@@ -293,67 +373,88 @@ function renderMarkdown(
       .replace(/>/g, "&gt;");
 
 
-  html =
-    html.replace(
-      /\*\*(.+?)\*\*/g,
-      "<strong>$1</strong>"
-    );
+  /* Блоки кода */
+
+  html = html.replace(
+    /```([\w+-]*)\n([\s\S]*?)```/g,
+    (match, language, code) => {
+
+      return `
+        <pre class="code-block">
+          <div class="code-header">
+            <span>${language || "code"}</span>
+          </div>
+          <code>${code}</code>
+        </pre>
+      `;
+    }
+  );
 
 
-  html =
-    html.replace(
-      /__(.+?)__/g,
-      "<strong>$1</strong>"
-    );
+  /* Жирный */
+
+  html = html.replace(
+    /\*\*(.+?)\*\*/g,
+    "<strong>$1</strong>"
+  );
 
 
-  html =
-    html.replace(
-      /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
-      "<em>$1</em>"
-    );
+  html = html.replace(
+    /__(.+?)__/g,
+    "<strong>$1</strong>"
+  );
 
 
-  html =
-    html.replace(
-      /`([^`\n]+)`/g,
-      "<code>$1</code>"
-    );
+  /* Курсив */
+
+  html = html.replace(
+    /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+    "<em>$1</em>"
+  );
 
 
-  html =
-    html.replace(
-      /^### (.+)$/gm,
-      "<h3>$1</h3>"
-    );
+  /* Код внутри строки */
+
+  html = html.replace(
+    /`([^`\n]+)`/g,
+    "<code class=\"inline-code\">$1</code>"
+  );
 
 
-  html =
-    html.replace(
-      /^## (.+)$/gm,
-      "<h2>$1</h2>"
-    );
+  /* Заголовки */
+
+  html = html.replace(
+    /^### (.+)$/gm,
+    "<h3>$1</h3>"
+  );
 
 
-  html =
-    html.replace(
-      /^# (.+)$/gm,
-      "<h1>$1</h1>"
-    );
+  html = html.replace(
+    /^## (.+)$/gm,
+    "<h2>$1</h2>"
+  );
 
 
-  html =
-    html.replace(
-      /^- (.+)$/gm,
-      "• $1"
-    );
+  html = html.replace(
+    /^# (.+)$/gm,
+    "<h1>$1</h1>"
+  );
 
 
-  html =
-    html.replace(
-      /\n/g,
-      "<br>"
-    );
+  /* Списки */
+
+  html = html.replace(
+    /^- (.+)$/gm,
+    "• $1"
+  );
+
+
+  /* Переносы */
+
+  html = html.replace(
+    /\n/g,
+    "<br>"
+  );
 
 
   element.innerHTML = html;
@@ -370,6 +471,7 @@ async function sendMessage() {
     return;
   }
 
+
   const text =
     input.value.trim();
 
@@ -378,12 +480,13 @@ async function sendMessage() {
     return;
   }
 
+
   await sendChatMessage(text);
 }
 
 
 /* =========================
-   ОБЫЧНЫЙ ЧАТ
+   ЗАПРОС К MIRROR
 ========================= */
 
 async function sendChatMessage(text) {
@@ -419,9 +522,7 @@ async function sendChatMessage(text) {
 
 
   chat.messages.push({
-
     role: "user",
-
     content: text
   });
 
@@ -461,7 +562,14 @@ async function sendChatMessage(text) {
 
           body:
             JSON.stringify({
-              message: text
+
+              message: text,
+
+              mode:
+                codeMode
+                  ? "code"
+                  : "normal"
+
             })
         }
       );
@@ -544,9 +652,7 @@ async function sendChatMessage(text) {
 
 
     chat.messages.push({
-
       role: "assistant",
-
       content: fullResponse
     });
 
@@ -589,7 +695,7 @@ async function sendChatMessage(text) {
 
 
 /* =========================
-   РАЗМЕР ПОЛЯ
+   TEXTAREA
 ========================= */
 
 function resizeInput() {
@@ -616,7 +722,7 @@ function scrollToBottom() {
 
 
 /* =========================
-   КНОПКИ
+   СОБЫТИЯ
 ========================= */
 
 mobileMenu.addEventListener(
@@ -634,6 +740,12 @@ closeMenu.addEventListener(
 newChatButton.addEventListener(
   "click",
   newChat
+);
+
+
+codeModeButton.addEventListener(
+  "click",
+  toggleCodeMode
 );
 
 
@@ -679,6 +791,8 @@ input.addEventListener(
 loadChats();
 
 renderHistory();
+
+updateModeUI();
 
 showWelcome();
 
