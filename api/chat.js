@@ -123,7 +123,9 @@ export default async function handler(req, res) {
 Если изображение нечёткое или информации недостаточно,
 скажи об этом.
 
-Обычно не превышай примерно 1000 слов.
+Обычно не превышай примерно 1000 слов,
+но если для нормального ответа нужно больше —
+можешь ответить подробнее.
 
 Если вопрос простой — отвечай значительно короче.
 
@@ -133,10 +135,14 @@ export default async function handler(req, res) {
 `;
 
 
+    /*
+      Лимит ответа.
+    */
+
     const maxOutputTokens =
       isCodeMode
         ? 10000
-        : 2500;
+        : 4000;
 
 
     /*
@@ -147,7 +153,7 @@ export default async function handler(req, res) {
 
 
     /*
-      Если есть текст — добавляем его.
+      Текст пользователя.
     */
 
     if (message && message.trim()) {
@@ -160,18 +166,10 @@ export default async function handler(req, res) {
 
 
     /*
-      Если есть изображение —
-      добавляем его как inlineData.
+      Изображение.
     */
 
     if (image) {
-
-      /*
-        Ожидается Data URL:
-
-        data:image/jpeg;base64,...
-
-      */
 
       if (
         typeof image !== "string" ||
@@ -248,7 +246,7 @@ export default async function handler(req, res) {
 
 
     /*
-      Запрашиваем Gemini.
+      Запускаем Gemini.
     */
 
     const stream =
@@ -274,7 +272,7 @@ export default async function handler(req, res) {
 
 
     /*
-      Включаем потоковый ответ.
+      Потоковый ответ.
     */
 
     res.statusCode =
@@ -300,7 +298,7 @@ export default async function handler(req, res) {
 
 
     /*
-      Отправляем ответ постепенно.
+      Отправляем текст постепенно.
     */
 
     for await (
