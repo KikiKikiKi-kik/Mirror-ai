@@ -608,3 +608,89 @@ textarea::placeholder {
 .exit-button:hover {
   background: #ececef;
 }
+
+/* ===== FIX SCALE ===== */
+
+.sidebar-header {
+  padding: 10px 12px;
+  min-height: 42px;
+  box-sizing: border-box;
+}
+
+.brand {
+  font-size: 15px;
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+}
+
+.new-chat {
+  font-size: 14px;
+  padding: 9px 11px;
+}
+
+.history-title {
+  font-size: 12px;
+}
+
+.history-item {
+  font-size: 13px;
+  padding: 8px 10px;
+}
+
+.close-menu {
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  padding: 0;
+}
+
+.sidebar-bottom {
+  padding: 10px;
+}
+
+.exit-button {
+  font-size: 13px;
+  padding: 8px 10px;
+}
+
+
+/* Телефон */
+
+@media (max-width: 700px) {
+
+  .sidebar {
+    width: 270px;
+  }
+
+  .close-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-menu {
+    font-size: 20px;
+  }
+
+  .mobile-title {
+    font-size: 15px;
+  }
+
+  .composer {
+    padding: 8px;
+  }
+
+  #messageInput {
+    font-size: 15px;
+  }
+
+  .send-button {
+    width: 34px;
+    height: 34px;
+  }
+
+}
