@@ -43,34 +43,42 @@ async function sendMessage() {
   try {
 
     const response = await fetch("/api/chat", {
-      method: "POST",
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: text })
+});
 
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-        message: text
-      })
-    });
-
-
-    const data = await response.json();
-
-
-    if (!response.ok) {
-  throw new Error(JSON.stringify(data, null, 2));
+if (!response.ok) {
+  const errorText = await response.text();
+  throw new Error(errorText || "Request failed");
 }
 
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
 
-    loading.querySelector(".bubble").textContent =
-      data.answer;
+let answer = "";
 
+loading.querySelector(".bubble").textContent = "";
 
-    currentChat.push({
-      role: "mirror",
-      content: data.answer
-    });
+while (true) {
+  const { value, done } = await reader.read();
+
+  if (done) break;
+
+  const chunk = decoder.decode(value, { stream: true });
+
+  answer += chunk;
+  loading.querySelector(".bubble").textContent = answer;
+
+  scrollToBottom();
+}
+
+currentChat.push({
+  role: "mirror",
+  content: answer
+});
+
+updateHistory(text);
 
 
     updateHistory(text);
