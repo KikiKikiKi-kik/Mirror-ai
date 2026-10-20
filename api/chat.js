@@ -26,21 +26,20 @@ export default async function handler(req, res) {
       apiKey: process.env.GEMINI_API_KEY
     });
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: message
+    const interaction = await ai.interactions.create({
+      model: "gemini-3.8-flash",
+      input: message
     });
 
     return res.status(200).json({
-      answer: response.text
+      answer: interaction.output_text
     });
 
   } catch (error) {
-    console.error("FULL GEMINI ERROR:", error);
+    console.error("Gemini error:", error);
 
     return res.status(500).json({
-      error: error.message || "Unknown Gemini error",
-      status: error.status || null
+      error: error.message || "Gemini request failed"
     });
   }
 }
