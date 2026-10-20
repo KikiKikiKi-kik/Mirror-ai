@@ -7,15 +7,13 @@
   <title>Mirror</title>
 
   <link rel="stylesheet" href="style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 </head>
 
 <body>
 
   <div class="app">
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
 
       <div class="sidebar-top">
@@ -25,13 +23,19 @@
           <span>Mirror</span>
         </div>
 
-        <button class="new-chat" id="newChat">
+        <button
+          class="new-chat"
+          id="newChat"
+          type="button"
+        >
           <span class="plus">＋</span>
           <span>Новый чат</span>
         </button>
 
       </div>
 
+
+      <!-- CHAT HISTORY -->
       <div class="history">
 
         <div class="history-title">
@@ -42,14 +46,36 @@
 
       </div>
 
+
+      <!-- SIDEBAR BOTTOM -->
+      <div class="sidebar-bottom">
+
+        <button
+          class="exit-button"
+          id="exitButton"
+          type="button"
+        >
+          <span>↪</span>
+          <span>Выйти</span>
+        </button>
+
+      </div>
+
     </aside>
 
 
+    <!-- MAIN -->
     <main class="main">
 
+      <!-- TOP BAR -->
       <header class="topbar">
 
-        <button class="mobile-menu" id="mobileMenu">
+        <button
+          class="mobile-menu"
+          id="mobileMenu"
+          type="button"
+          aria-label="Открыть меню"
+        >
           ☰
         </button>
 
@@ -60,11 +86,19 @@
       </header>
 
 
+      <!-- CHAT -->
       <section class="chat">
 
-        <div class="messages" id="messages">
+        <div
+          class="messages"
+          id="messages"
+        >
 
-          <div class="welcome" id="welcome">
+          <!-- WELCOME -->
+          <div
+            class="welcome"
+            id="welcome"
+          >
 
             <div class="welcome-mark">
               M
@@ -79,6 +113,7 @@
         </div>
 
 
+        <!-- COMPOSER -->
         <div class="composer-area">
 
           <div class="composer">
@@ -87,12 +122,14 @@
               id="messageInput"
               placeholder="Сообщение Mirror"
               rows="1"
+              autocomplete="off"
             ></textarea>
 
             <button
               id="sendButton"
               class="send-button"
-              aria-label="Отправить"
+              type="button"
+              aria-label="Отправить сообщение"
             >
               ↑
             </button>
@@ -112,6 +149,7 @@
   </div>
 
 
+  <!-- APP -->
   <script src="app.js"></script>
 
 </body>
