@@ -27,8 +27,11 @@ let codeMode = false;
 ========================= */
 
 function loadChats() {
+
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+
+    const saved =
+      localStorage.getItem(STORAGE_KEY);
 
     if (saved) {
       chats = JSON.parse(saved);
@@ -39,25 +42,38 @@ function loadChats() {
     }
 
   } catch (error) {
-    console.error("Ошибка загрузки чатов:", error);
+
+    console.error(
+      "Ошибка загрузки чатов:",
+      error
+    );
+
     chats = [];
   }
 }
 
 
 function saveChats() {
+
   try {
+
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(chats)
     );
+
   } catch (error) {
-    console.error("Ошибка сохранения чатов:", error);
+
+    console.error(
+      "Ошибка сохранения чатов:",
+      error
+    );
   }
 }
 
 
 function getCurrentChat() {
+
   return chats.find(
     chat => chat.id === currentChatId
   );
@@ -69,11 +85,13 @@ function getCurrentChat() {
 ========================= */
 
 function closeSidebar() {
+
   sidebar.classList.remove("open");
 }
 
 
 function toggleSidebar() {
+
   sidebar.classList.toggle("open");
 }
 
@@ -86,22 +104,28 @@ function renderHistory() {
 
   historyList.innerHTML = "";
 
-  [...chats].reverse().forEach(chat => {
+  [...chats]
+    .reverse()
+    .forEach(chat => {
 
-    const item = document.createElement("div");
+      const item =
+        document.createElement("div");
 
-    item.className = "history-item";
+      item.className =
+        "history-item";
 
-    item.textContent =
-      chat.title || "Новый чат";
+      item.textContent =
+        chat.title || "Новый чат";
 
-    item.addEventListener(
-      "click",
-      () => openChat(chat.id)
-    );
 
-    historyList.appendChild(item);
-  });
+      item.addEventListener(
+        "click",
+        () => openChat(chat.id)
+      );
+
+
+      historyList.appendChild(item);
+    });
 }
 
 
@@ -113,9 +137,12 @@ function showWelcome() {
 
   messages.innerHTML = "";
 
-  const welcome = document.createElement("div");
 
-  welcome.className = "welcome";
+  const welcome =
+    document.createElement("div");
+
+  welcome.className =
+    "welcome";
 
 
   if (codeMode) {
@@ -149,16 +176,20 @@ function showWelcome() {
 
 
 /* =========================
-   CODE MODE
+   РЕЖИМ CODE
 ========================= */
 
 function updateModeUI() {
 
   if (codeMode) {
 
-    codeModeButton.classList.add("active");
+    codeModeButton.classList.add(
+      "active"
+    );
 
-    modeIndicator.classList.add("show");
+    modeIndicator.classList.add(
+      "show"
+    );
 
     input.placeholder =
       "Сообщение Mirror Code";
@@ -168,9 +199,13 @@ function updateModeUI() {
 
   } else {
 
-    codeModeButton.classList.remove("active");
+    codeModeButton.classList.remove(
+      "active"
+    );
 
-    modeIndicator.classList.remove("show");
+    modeIndicator.classList.remove(
+      "show"
+    );
 
     input.placeholder =
       "Сообщение Mirror";
@@ -185,17 +220,40 @@ function toggleCodeMode() {
 
   codeMode = !codeMode;
 
-  currentChatId = null;
-
-  input.value = "";
-
-  resizeInput();
 
   updateModeUI();
 
-  showWelcome();
 
-  closeSidebar();
+  /*
+    Если открыт чат — сохраняем
+    выбранный режим в этом чате.
+  */
+
+  const chat =
+    getCurrentChat();
+
+
+  if (chat) {
+
+    chat.mode =
+      codeMode
+        ? "code"
+        : "normal";
+
+    saveChats();
+  }
+
+
+  /*
+    Если текущий экран — приветствие,
+    обновляем его.
+  */
+
+  if (!currentChatId) {
+
+    showWelcome();
+  }
+
 
   input.focus();
 }
@@ -229,7 +287,8 @@ function createChat(firstMessage) {
 
   const chat = {
 
-    id: Date.now().toString(),
+    id:
+      Date.now().toString(),
 
     title:
       firstMessage.length > 40
@@ -247,11 +306,14 @@ function createChat(firstMessage) {
 
   chats.push(chat);
 
-  currentChatId = chat.id;
+  currentChatId =
+    chat.id;
+
 
   saveChats();
 
   renderHistory();
+
 
   return chat;
 }
@@ -263,16 +325,19 @@ function createChat(firstMessage) {
 
 function openChat(chatId) {
 
-  const chat = chats.find(
-    item => item.id === chatId
-  );
+  const chat =
+    chats.find(
+      item => item.id === chatId
+    );
+
 
   if (!chat) {
     return;
   }
 
 
-  currentChatId = chat.id;
+  currentChatId =
+    chat.id;
 
 
   codeMode =
@@ -285,15 +350,16 @@ function openChat(chatId) {
   messages.innerHTML = "";
 
 
-  chat.messages.forEach(message => {
+  chat.messages.forEach(
+    message => {
 
-    addMessage(
-      message.role,
-      message.content,
-      false
-    );
-
-  });
+      addMessage(
+        message.role,
+        message.content,
+        false
+      );
+    }
+  );
 
 
   closeSidebar();
@@ -305,7 +371,7 @@ function openChat(chatId) {
 
 
 /* =========================
-   СООБЩЕНИЕ
+   ДОБАВИТЬ СООБЩЕНИЕ
 ========================= */
 
 function addMessage(
@@ -316,6 +382,7 @@ function addMessage(
 
   const wrapper =
     document.createElement("div");
+
 
   wrapper.className =
     "message " +
@@ -328,6 +395,7 @@ function addMessage(
 
   const content =
     document.createElement("div");
+
 
   content.className =
     "message-content";
@@ -342,13 +410,19 @@ function addMessage(
 
   } else {
 
-    content.textContent = text;
+    content.textContent =
+      text;
   }
 
 
-  wrapper.appendChild(content);
+  wrapper.appendChild(
+    content
+  );
 
-  messages.appendChild(wrapper);
+
+  messages.appendChild(
+    wrapper
+  );
 
 
   if (scroll) {
@@ -361,103 +435,329 @@ function addMessage(
 
 
 /* =========================
+   ЭКРАНИРОВАНИЕ
+========================= */
+
+function escapeHtml(text) {
+
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+
+/* =========================
    MARKDOWN
 ========================= */
 
-function renderMarkdown(element, text) {
+function renderMarkdown(
+  element,
+  text
+) {
+
+  /*
+    Сначала отдельно вытаскиваем
+    блоки кода, чтобы Markdown
+    внутри кода не ломался.
+  */
+
+  const codeBlocks = [];
+
+
+  let safeText =
+    text.replace(
+      /```([\w.+-]*)\n?([\s\S]*?)```/g,
+      (match, language, code) => {
+
+        const index =
+          codeBlocks.length;
+
+
+        codeBlocks.push({
+          language:
+            language || "code",
+
+          code:
+            code.replace(
+              /\n$/,
+              ""
+            )
+        });
+
+
+        return `@@CODE_BLOCK_${index}@@`;
+      }
+    );
+
+
+  /*
+    Экранируем обычный текст.
+  */
 
   let html =
-    text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+    escapeHtml(
+      safeText
+    );
 
 
-  /* Блоки кода */
+  /*
+    Жирный текст.
+  */
 
-  html = html.replace(
-    /```([\w+-]*)\n([\s\S]*?)```/g,
-    (match, language, code) => {
+  html =
+    html.replace(
+      /\*\*(.+?)\*\*/g,
+      "<strong>$1</strong>"
+    );
 
-      return `
+
+  html =
+    html.replace(
+      /__(.+?)__/g,
+      "<strong>$1</strong>"
+    );
+
+
+  /*
+    Курсив.
+  */
+
+  html =
+    html.replace(
+      /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+      "<em>$1</em>"
+    );
+
+
+  /*
+    Inline code.
+  */
+
+  html =
+    html.replace(
+      /`([^`\n]+)`/g,
+      "<code class=\"inline-code\">$1</code>"
+    );
+
+
+  /*
+    Заголовки.
+  */
+
+  html =
+    html.replace(
+      /^### (.+)$/gm,
+      "<h3>$1</h3>"
+    );
+
+
+  html =
+    html.replace(
+      /^## (.+)$/gm,
+      "<h2>$1</h2>"
+    );
+
+
+  html =
+    html.replace(
+      /^# (.+)$/gm,
+      "<h1>$1</h1>"
+    );
+
+
+  /*
+    Списки.
+  */
+
+  html =
+    html.replace(
+      /^- (.+)$/gm,
+      "• $1"
+    );
+
+
+  /*
+    Переносы строк.
+  */
+
+  html =
+    html.replace(
+      /\n/g,
+      "<br>"
+    );
+
+
+  /*
+    Возвращаем блоки кода.
+  */
+
+  codeBlocks.forEach(
+    (block, index) => {
+
+      const marker =
+        `@@CODE_BLOCK_${index}@@`;
+
+
+      const escapedCode =
+        escapeHtml(
+          block.code
+        );
+
+
+      const codeHtml = `
         <pre class="code-block">
           <div class="code-header">
-            <span>${language || "code"}</span>
+
+            <span>
+              ${escapeHtml(block.language)}
+            </span>
+
+            <button
+              class="copy-code"
+              type="button"
+              data-code-index="${index}"
+            >
+              Копировать
+            </button>
+
           </div>
-          <code>${code}</code>
+
+          <code class="code-content">${escapedCode}</code>
         </pre>
       `;
+
+
+      html =
+        html.replace(
+          marker,
+          codeHtml
+        );
     }
   );
 
 
-  /* Жирный */
+  element.innerHTML =
+    html;
 
-  html = html.replace(
-    /\*\*(.+?)\*\*/g,
-    "<strong>$1</strong>"
+
+  /*
+    Подключаем кнопки копирования.
+  */
+
+  const buttons =
+    element.querySelectorAll(
+      ".copy-code"
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        async () => {
+
+          const index =
+            Number(
+              button.dataset.codeIndex
+            );
+
+
+          const block =
+            codeBlocks[index];
+
+
+          if (!block) {
+            return;
+          }
+
+
+          try {
+
+            await navigator.clipboard.writeText(
+              block.code
+            );
+
+
+            const oldText =
+              button.textContent;
+
+
+            button.textContent =
+              "Скопировано";
+
+
+            setTimeout(
+              () => {
+
+                button.textContent =
+                  oldText;
+
+              },
+              1500
+            );
+
+
+          } catch (error) {
+
+            /*
+              Запасной способ
+              для старых браузеров.
+            */
+
+            const textarea =
+              document.createElement(
+                "textarea"
+              );
+
+
+            textarea.value =
+              block.code;
+
+
+            document.body.appendChild(
+              textarea
+            );
+
+
+            textarea.select();
+
+
+            try {
+
+              document.execCommand(
+                "copy"
+              );
+
+
+              button.textContent =
+                "Скопировано";
+
+
+              setTimeout(
+                () => {
+
+                  button.textContent =
+                    "Копировать";
+
+                },
+                1500
+              );
+
+            } catch {
+
+              button.textContent =
+                "Не удалось скопировать";
+            }
+
+
+            textarea.remove();
+          }
+        }
+      );
+    }
   );
-
-
-  html = html.replace(
-    /__(.+?)__/g,
-    "<strong>$1</strong>"
-  );
-
-
-  /* Курсив */
-
-  html = html.replace(
-    /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
-    "<em>$1</em>"
-  );
-
-
-  /* Код внутри строки */
-
-  html = html.replace(
-    /`([^`\n]+)`/g,
-    "<code class=\"inline-code\">$1</code>"
-  );
-
-
-  /* Заголовки */
-
-  html = html.replace(
-    /^### (.+)$/gm,
-    "<h3>$1</h3>"
-  );
-
-
-  html = html.replace(
-    /^## (.+)$/gm,
-    "<h2>$1</h2>"
-  );
-
-
-  html = html.replace(
-    /^# (.+)$/gm,
-    "<h1>$1</h1>"
-  );
-
-
-  /* Списки */
-
-  html = html.replace(
-    /^- (.+)$/gm,
-    "• $1"
-  );
-
-
-  /* Переносы */
-
-  html = html.replace(
-    /\n/g,
-    "<br>"
-  );
-
-
-  element.innerHTML = html;
 }
 
 
@@ -481,24 +781,35 @@ async function sendMessage() {
   }
 
 
-  await sendChatMessage(text);
+  await sendChatMessage(
+    text
+  );
 }
 
 
 /* =========================
-   ЗАПРОС К MIRROR
+   ЗАПРОС К API
 ========================= */
 
-async function sendChatMessage(text) {
+async function sendChatMessage(
+  text
+) {
 
   isGenerating = true;
 
-  sendButton.disabled = true;
+  sendButton.disabled =
+    true;
+
 
   input.value = "";
 
   resizeInput();
 
+
+  /*
+    Если чат ещё не создан,
+    создаём его с текущим режимом.
+  */
 
   if (!currentChatId) {
 
@@ -508,21 +819,35 @@ async function sendChatMessage(text) {
   }
 
 
-  const chat = getCurrentChat();
+  const chat =
+    getCurrentChat();
 
 
   if (!chat) {
 
     isGenerating = false;
 
-    sendButton.disabled = false;
+    sendButton.disabled =
+      false;
 
     return;
   }
 
 
+  /*
+    Сохраняем режим чата.
+  */
+
+  chat.mode =
+    codeMode
+      ? "code"
+      : "normal";
+
+
   chat.messages.push({
+
     role: "user",
+
     content: text
   });
 
@@ -553,6 +878,7 @@ async function sendChatMessage(text) {
       await fetch(
         "/api/chat",
         {
+
           method: "POST",
 
           headers: {
@@ -563,7 +889,8 @@ async function sendChatMessage(text) {
           body:
             JSON.stringify({
 
-              message: text,
+              message:
+                text,
 
               mode:
                 codeMode
@@ -585,6 +912,7 @@ async function sendChatMessage(text) {
 
         const errorData =
           await response.json();
+
 
         errorText =
           errorData.error ||
@@ -612,7 +940,9 @@ async function sendChatMessage(text) {
 
 
     const decoder =
-      new TextDecoder("utf-8");
+      new TextDecoder(
+        "utf-8"
+      );
 
 
     while (true) {
@@ -638,7 +968,8 @@ async function sendChatMessage(text) {
         );
 
 
-      fullResponse += chunk;
+      fullResponse +=
+        chunk;
 
 
       renderMarkdown(
@@ -651,9 +982,16 @@ async function sendChatMessage(text) {
     }
 
 
+    /*
+      Сохраняем ответ.
+    */
+
     chat.messages.push({
+
       role: "assistant",
-      content: fullResponse
+
+      content:
+        fullResponse
     });
 
 
@@ -683,9 +1021,11 @@ async function sendChatMessage(text) {
 
   } finally {
 
-    isGenerating = false;
+    isGenerating =
+      false;
 
-    sendButton.disabled = false;
+    sendButton.disabled =
+      false;
 
     input.focus();
 
@@ -695,12 +1035,14 @@ async function sendChatMessage(text) {
 
 
 /* =========================
-   TEXTAREA
+   РАЗМЕР TEXTAREA
 ========================= */
 
 function resizeInput() {
 
-  input.style.height = "auto";
+  input.style.height =
+    "auto";
+
 
   input.style.height =
     Math.min(
