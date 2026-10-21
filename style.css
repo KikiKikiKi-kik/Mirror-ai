@@ -1,530 +1,96 @@
-* {
-    box-sizing: border-box;
-    }
-
-html,
-body {
-margin: 0;
-width: 100%;
-height: 100%;
-overflow: hidden;
-font-family: Arial, sans-serif;
-background: #fff;
-color: #111;
-}
-
-button,
-textarea {
-font: inherit;
-}
-
-.app {
-display: flex;
-width: 100%;
-height: 100vh;
-}
-
-/* SIDEBAR */
-
-.sidebar {
-width: 235px;
-min-width: 235px;
-height: 100vh;
-background: #f7f7f8;
-border-right: 1px solid #e5e5e5;
-display: flex;
-flex-direction: column;
-}
-
-.sidebar-header {
-height: 54px;
-padding: 0 13px;
-display: flex;
-align-items: center;
-justify-content: space-between;
-}
-
-.brand {
-display: flex;
-align-items: center;
-gap: 7px;
-font-size: 17px;
-font-weight: 600;
-}
-
-.brand-mark,
-.welcome-mark {
-background: #111;
-color: #fff;
-display: flex;
-align-items: center;
-justify-content: center;
-font-weight: 700;
-}
-
-.brand-mark {
-width: 27px;
-height: 27px;
-border-radius: 8px;
-}
-
-.close-menu {
-display: none;
-background: none;
-font-size: 25px;
-color: #777;
-}
-
-.sidebar-top {
-padding: 7px 10px;
-}
-
-.new-chat,
-.code-mode {
-width: 100%;
-height: 38px;
-border-radius: 9px;
-display: flex;
-align-items: center;
-gap: 8px;
-padding: 0 10px;
-cursor: pointer;
-text-align: left;
-font-size: 13px;
-}
-
-.new-chat {
-background: #111;
-color: #fff;
-margin-bottom: 6px;
-}
-
-.code-mode {
-background: transparent;
-color: #333;
-}
-
-.code-mode:hover {
-background: #e9e9ea;
-}
-
-.history {
-flex: 1;
-overflow-y: auto;
-padding: 6px 10px;
-}
-
-.history-title {
-padding: 7px;
-font-size: 11px;
-color: #888;
-}
-
-.history-item {
-width: 100%;
-min-height: 35px;
-padding: 7px 9px;
-margin-bottom: 2px;
-border: 0;
-border-radius: 7px;
-background: transparent;
-cursor: pointer;
-text-align: left;
-font-size: 13px;
-color: #333;
-overflow: hidden;
-text-overflow: ellipsis;
-white-space: nowrap;
-}
-
-.history-item:hover,
-.history-item.active {
-background: #e5e5e6;
-}
-
-.sidebar-bottom {
-padding: 9px;
-}
-
-.exit-button {
-width: 100%;
-height: 35px;
-border-radius: 8px;
-background: transparent;
-color: #666;
-display: flex;
-align-items: center;
-gap: 8px;
-padding: 0 9px;
-cursor: pointer;
-font-size: 13px;
-}
-
-/* MAIN */
-
-.main {
-flex: 1;
-min-width: 0;
-height: 100vh;
-display: flex;
-flex-direction: column;
-}
-
-.topbar {
-height: 48px;
-min-height: 48px;
-display: flex;
-align-items: center;
-padding: 0 13px;
-border-bottom: 1px solid #eee;
-}
-
-.mobile-menu {
-display: none;
-background: none;
-font-size: 20px;
-}
-
-.mobile-title {
-font-size: 15px;
-font-weight: 600;
-margin-left: 8px;
-}
-
-/* CHAT */
-
-.chat {
-flex: 1;
-min-height: 0;
-display: flex;
-flex-direction: column;
-}
-
-.messages {
-flex: 1;
-min-height: 0;
-overflow-y: auto;
-padding: 20px 12px 115px;
-}
-
-.welcome {
-min-height: 100%;
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-text-align: center;
-padding-bottom: 70px;
-}
-
-.welcome-mark {
-width: 44px;
-height: 44px;
-border-radius: 13px;
-font-size: 21px;
-margin-bottom: 13px;
-}
-
-.welcome h1 {
-margin: 0 0 6px;
-font-size: 23px;
-}
-
-.welcome p {
-margin: 0;
-color: #888;
-font-size: 13px;
-}
-
-/* MESSAGES */
-
-.message {
-max-width: 760px;
-margin: 0 auto 17px;
-line-height: 1.5;
-font-size: 14px;
-}
-
-.message.user {
-display: flex;
-justify-content: flex-end;
-}
-
-.message.user .message-content {
-background: #f1f1f1;
-border-radius: 14px;
-padding: 8px 11px;
-max-width: 78%;
-}
-
-.message-content {
-overflow-wrap: anywhere;
-}
-
-.message-image {
-display: block;
-width: auto;
-max-width: 100%;
-max-height: 300px;
-border-radius: 10px;
-margin-bottom: 6px;
-}
-
-/* THINKING */
-
-.thinking-message {
-opacity: .65;
-}
-
-.thinking-text {
-font-size: 13px;
-color: #777;
-}
-
-.thinking-dots {
-display: inline-block;
-width: 17px;
-animation: thinkingDots 1.2s infinite;
-}
-
-@keyframes thinkingDots {
-0%,100% { opacity: .2; }
-50% { opacity: 1; }
-}
-
-/* COMPOSER */
-
-.composer-area {
-position: absolute;
-left: 235px;
-right: 0;
-bottom: 0;
-padding: 6px 12px 8px;
-background: linear-gradient(
-to top,
-#fff 75%,
-rgba(255,255,255,0)
-);
-z-index: 10;
-}
-
-.composer {
-width: 100%;
-max-width: 760px;
-min-height: 45px;
-margin: 0 auto;
-display: flex;
-align-items: flex-end;
-gap: 5px;
-padding: 5px 6px;
-background: #fff;
-border: 1px solid #d7d7d7;
-border-radius: 14px;
-box-shadow: 0 2px 10px rgba(0,0,0,.04);
-}
-
-.image-button,
-.send-button {
-flex: 0 0 33px;
-width: 33px;
-height: 33px;
-border-radius: 9px;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-}
-
-.image-button {
-background: #f0f0f0;
-font-size: 16px;
-}
-
-.send-button {
-background: #111;
-color: #fff;
-font-size: 18px;
-}
-
-#messageInput {
-flex: 1;
-min-width: 0;
-max-height: 130px;
-resize: none;
-border: 0;
-outline: 0;
-background: transparent;
-padding: 7px 3px;
-line-height: 1.35;
-font-size: 14px;
-}
-
-/* PHOTO PREVIEW */
-
-.image-preview {
-display: none;
-position: relative;
-width: 100%;
-max-width: 760px;
-margin: 0 auto 5px;
-padding: 4px;
-background: #f7f7f8;
-border: 1px solid #ddd;
-border-radius: 9px;
-}
-
-.image-preview.show {
-display: block;
-}
-
-.image-preview img {
-display: block;
-max-width: 100%;
-max-height: 110px;
-border-radius: 6px;
-}
-
-.remove-image {
-position: absolute;
-top: 5px;
-right: 5px;
-width: 23px;
-height: 23px;
-border-radius: 50%;
-background: rgba(0,0,0,.7);
-color: #fff;
-font-size: 16px;
-cursor: pointer;
-}
-
-/* MODE */
-
-.mode-indicator {
-display: none;
-width: fit-content;
-margin: 0 auto 4px;
-padding: 4px 7px;
-border-radius: 6px;
-background: #eee;
-color: #555;
-font-size: 10px;
-}
-
-.mode-indicator.show {
-display: flex;
-gap: 5px;
-}
-
-/* DISCLAIMER */
-
-.disclaimer {
-max-width: 760px;
-margin: 4px auto 0;
-text-align: center;
-font-size: 9px;
-color: #999;
-}
-
-/* CODE */
-
-.code-block {
-position: relative;
-margin: 9px 0;
-border-radius: 8px;
-background: #181818;
-color: #f5f5f5;
-overflow: hidden;
-}
-
-.code-block pre {
-margin: 0;
-padding: 11px;
-overflow-x: auto;
-font-family: Consolas, monospace;
-font-size: 12px;
-}
-
-.copy-code {
-position: absolute;
-top: 5px;
-right: 5px;
-padding: 4px 7px;
-border-radius: 5px;
-background: #333;
-color: #eee;
-cursor: pointer;
-font-size: 10px;
-}
-
-/* MOBILE */
-
-@media (max-width: 700px) {
-
-.sidebar {
-position: fixed;
-left: 0;
-top: 0;
-width: 235px;
-min-width: 235px;
-transform: translateX(-100%);
-transition: transform .2s ease;
-box-shadow: 7px 0 25px rgba(0,0,0,.12);
-z-index: 100;
-}
-
-.sidebar.open {
-transform: translateX(0);
-}
-
-.close-menu {
-display: block;
-}
-
-.mobile-menu {
-display: block;
-}
-
-.topbar {
-height: 46px;
-min-height: 46px;
-padding: 0 10px;
-}
-
-.messages {
-padding: 15px 9px 105px;
-}
-
-.message {
-font-size: 14px;
-}
-
-.message.user .message-content {
-max-width: 88%;
-}
-
-.composer-area {
-left: 0;
-padding: 5px 7px 6px;
-}
-
-.composer {
-min-height: 43px;
-border-radius: 13px;
-padding: 4px 5px;
-}
-
-.image-button,
-.send-button {
-width: 32px;
-height: 32px;
-flex-basis: 32px;
-}
-
-#messageInput {
-font-size: 14px;
-}
-
-.disclaimer {
-font-size: 8px;
-}
-}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mirror</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+<div class="sidebar-header">
+  <div class="brand">
+    <span class="brand-mark">M</span>
+    <span>Mirror</span>
+  </div>
+  <button id="closeMenu" class="close-menu" type="button">×</button>
+</div>
+<div class="sidebar-actions">
+  <button id="newChat" class="new-chat" type="button">
+    <span>＋</span>
+    <span>Новый чат</span>
+  </button>
+  <button id="codeMode" class="code-mode" type="button">
+    <span>&lt;/&gt;</span>
+    <span>Mirror Code</span>
+  </button>
+</div>
+<div class="history">
+  <div class="history-title">Сегодня</div>
+  <div id="historyList"></div>
+</div>
+<div class="sidebar-bottom">
+  <button id="exitButton" class="exit-button" type="button">
+    ↪ Закрыть меню
+  </button>
+</div>
+  </aside>
+  <main class="main">
+<header class="topbar">
+  <button id="mobileMenu" class="mobile-menu" type="button">☰</button>
+  <span class="mobile-title">Mirror</span>
+</header>
+<section class="chat">
+  <div id="messages" class="messages"></div>
+  <div class="composer-area">
+    <div id="modeIndicator" class="mode-indicator">
+      <span>&lt;/&gt;</span>
+      <span>Mirror Code</span>
+    </div>
+    <div id="imagePreview" class="image-preview">
+      <img id="previewImage" alt="Предпросмотр">
+      <button id="removeImage" class="remove-image" type="button">
+        ×
+      </button>
+    </div>
+    <div class="composer">
+      <button
+        id="imageButton"
+        class="image-button"
+        type="button"
+        aria-label="Добавить изображение"
+      >
+        🖼️
+      </button>
+      <input
+        id="imageInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
+        hidden
+      >
+      <textarea
+        id="messageInput"
+        rows="1"
+        placeholder="Сообщение Mirror"
+        autocomplete="off"
+      ></textarea>
+      <button
+        id="sendButton"
+        class="send-button"
+        type="button"
+        aria-label="Отправить"
+      >
+        ↑
+      </button>
+    </div>
+    <div class="disclaimer">
+      Mirror может ошибаться. Проверяйте важную информацию.
+    </div>
+  </div>
+</section>
+  </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
