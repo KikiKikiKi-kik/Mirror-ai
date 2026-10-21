@@ -75,7 +75,7 @@ function toggleSidebar() {
   );
 }
 /* =========================
-   ИСТОРИЯ
+   ИСТОРИЯ ЧАТОВ
 ========================= */
 function renderHistory() {
   historyList.innerHTML = "";
@@ -102,6 +102,7 @@ function renderHistory() {
 ========================= */
 function showWelcome() {
   messages.innerHTML = "";
+  thinkingElement = null;
   const welcome =
     document.createElement("div");
   welcome.className =
@@ -128,7 +129,7 @@ function showWelcome() {
   );
 }
 /* =========================
-   THINKING
+   THINK...
 ========================= */
 function showThinking() {
   hideThinking();
@@ -153,11 +154,10 @@ function hideThinking() {
     return;
   }
   thinkingElement.remove();
-  thinkingElement =
-    null;
+  thinkingElement = null;
 }
 /* =========================
-   РЕЖИМ CODE
+   MIRROR CODE
 ========================= */
 function updateModeUI() {
   if (codeMode) {
@@ -226,13 +226,18 @@ function newChat() {
    СОЗДАНИЕ ЧАТА
 ========================= */
 function createChat(firstMessage) {
+  const title =
+    firstMessage &&
+    firstMessage.trim()
+      ? firstMessage.trim()
+      : "Изображение";
   const chat = {
     id:
       Date.now().toString(),
     title:
-      firstMessage.length > 40
-        ? firstMessage.slice(0, 40) + "..."
-        : firstMessage,
+      title.length > 40
+        ? title.slice(0, 40) + "..."
+        : title,
     mode:
       codeMode
         ? "code"
@@ -269,6 +274,8 @@ function openChat(chatId) {
   updateModeUI();
   messages.innerHTML =
     "";
+  thinkingElement =
+    null;
   chat.messages.forEach(
     message => {
       addMessage(
@@ -352,10 +359,10 @@ function addMessage(
   return content;
 }
 /* =========================
-   ЭКРАНИРОВАНИЕ
+   HTML ESCAPE
 ========================= */
 function escapeHtml(text) {
-  return text
+  return String(text)
     .replace(
       /&/g,
       "&amp;"
@@ -378,7 +385,7 @@ function renderMarkdown(
 ) {
   const codeBlocks = [];
   let safeText =
-    text.replace(
+    String(text).replace(
       /```([\w.+-]*)\n?([\s\S]*?)```/g,
       (
         match,
@@ -556,7 +563,7 @@ function renderMarkdown(
   );
 }
 /* =========================
-   КАРТИНКА
+   ИЗОБРАЖЕНИЯ
 ========================= */
 imageButton.addEventListener(
   "click",
@@ -645,14 +652,13 @@ async function sendMessage() {
   );
 }
 /* =========================
-   ЗАПРОС К API
+   ЗАПРОС К MIRROR API
 ========================= */
 async function sendChatMessage(
   text
 ) {
   isGenerating =
     true;
-  showThinking();
   sendButton.disabled =
     true;
   imageButton.disabled =
@@ -665,17 +671,21 @@ async function sendChatMessage(
       ? selectedImage.data
       : null;
   removeSelectedImage();
+  /*
+    Если чата ещё нет,
+    создаём его.
+  */
   if (!currentChatId) {
-    showWelcome();
     createChat(
       text ||
       "Изображение"
     );
+    messages.innerHTML =
+      "";
   }
   const chat =
     getCurrentChat();
   if (!chat) {
-    hideThinking();
     isGenerating =
       false;
     sendButton.disabled =
@@ -684,10 +694,33 @@ async function sendChatMessage(
       false;
     return;
   }
+  /*
+    Сохраняем режим.
+  */
   chat.mode =
     codeMode
       ? "code"
       : "normal";
+  /*
+    ВАЖНО:
+    Берём историю ДО добавления
+    текущего сообщения.
+    Поэтому текущее сообщение
+    не будет отправлено Gemini дважды.
+  */
+  const conversationHistory =
+    chat.messages
+      .slice(-30)
+      .map(item => ({
+        role:
+          item.role,
+        content:
+          item.content || ""
+      }));
+  /*
+    Теперь добавляем новое сообщение
+    пользователя в локальный чат.
+  */
   chat.messages.push({
     role:
       "user",
@@ -697,18 +730,25 @@ async function sendChatMessage(
       imageForMessage
   });
   saveChats();
+  /*
+    Показываем сообщение пользователя.
+  */
   addMessage(
     "user",
     text,
     true,
     imageForMessage
   );
-  const assistantElement =
-    addMessage(
-      "assistant",
-      "",
-      true
-    );
+  /*
+    Показываем think...
+  */
+  showThinking();
+  /*
+    Создаём пустое место
+    для будущего ответа Mirror.
+  */
+  let assistantElement =
+    null;
   let fullResponse =
     "";
   try {
@@ -731,7 +771,9 @@ async function sendChatMessage(
                   ? "code"
                   : "normal",
               image:
-                imageForMessage
+                imageForMessage,
+              history:
+                conversationHistory
             })
         }
       );
@@ -771,11 +813,6 @@ async function sendChatMessage(
       if (done) {
         break;
       }
-      if (firstChunk) {
-        hideThinking();
-        firstChunk =
-          false;
-      }
       const chunk =
         decoder.decode(
           value,
@@ -784,6 +821,24 @@ async function sendChatMessage(
               true
           }
         );
+      if (!chunk) {
+        continue;
+      }
+      /*
+        Как только пришёл первый текст,
+        убираем think...
+      */
+      if (firstChunk) {
+        hideThinking();
+        assistantElement =
+          addMessage(
+            "assistant",
+            "",
+            true
+          );
+        firstChunk =
+          false;
+      }
       fullResponse +=
         chunk;
       renderMarkdown(
@@ -792,19 +847,33 @@ async function sendChatMessage(
       );
       scrollToBottom();
     }
-    /*
-      Если сервер почему-то
-      не прислал ни одного чанка.
-    */
     hideThinking();
+    /*
+      Если Gemini почему-то
+      ничего не прислал.
+    */
     if (!fullResponse.trim()) {
       fullResponse =
         "Не удалось получить ответ от Mirror.";
+      if (!assistantElement) {
+        assistantElement =
+          addMessage(
+            "assistant",
+            "",
+            true
+          );
+      }
       renderMarkdown(
         assistantElement,
         fullResponse
       );
     }
+    /*
+      Сохраняем ответ Mirror
+      в историю чата.
+      При следующем сообщении
+      он попадёт в history.
+    */
     chat.messages.push({
       role:
         "assistant",
@@ -825,6 +894,14 @@ async function sendChatMessage(
         error.message ||
         "не удалось получить ответ"
       );
+    if (!assistantElement) {
+      assistantElement =
+        addMessage(
+          "assistant",
+          "",
+          true
+        );
+    }
     renderMarkdown(
       assistantElement,
       errorMessage
