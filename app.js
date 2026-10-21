@@ -1,680 +1,556 @@
-const STORAGE_KEY = “mirror_chats_v1”;
-
-const $ = id => document.getElementById(id);
-
-const messages = $(“messages”);
-const input = $(“messageInput”);
-const sendButton = $(“sendButton”);
-
-const imageButton = $(“imageButton”);
-const imageInput = $(“imageInput”);
-const imagePreview = $(“imagePreview”);
-const previewImage = $(“previewImage”);
-const removeImage = $(“removeImage”);
-
-const historyList = $(“historyList”);
-
-const sidebar = $(“sidebar”);
-const mobileMenu = $(“mobileMenu”);
-const closeMenu = $(“closeMenu”);
-const exitButton = $(“exitButton”);
-
-const newChatButton = $(“newChat”);
-const codeModeButton = $(“codeMode”);
-const modeIndicator = $(“modeIndicator”);
-
-let chats = loadChats();
-let currentChatId = null;
-let selectedImage = null;
-let codeMode = false;
-let generating = false;
-
-/* STORAGE */
-
-function loadChats() {
-try {
-const data = localStorage.getItem(STORAGE_KEY);
-const parsed = data ? JSON.parse(data) : [];
-
-return Array.isArray(parsed) ? parsed : [];
-
-} catch {
-return [];
+* {
+  box-sizing: border-box;
 }
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
-
-function saveChats() {
-try {
-localStorage.setItem(
-STORAGE_KEY,
-JSON.stringify(chats)
-);
-} catch (error) {
-console.error(“Ошибка сохранения:”, error);
+body {
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+  color: #171717;
+  background: #fff;
 }
+button,
+textarea {
+  font: inherit;
 }
-
-function getChat() {
-return chats.find(
-chat => chat.id === currentChatId
-);
+button {
+  border: 0;
 }
-
+/* APP */
+.app {
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+}
+/* SIDEBAR */
+.sidebar {
+  width: 230px;
+  min-width: 230px;
+  height: 100%;
+  background: #f7f7f8;
+  border-right: 1px solid #e6e6e6;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  height: 52px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.close-menu {
+  display: none;
+  background: transparent;
+  color: #777;
+  font-size: 25px;
+  cursor: pointer;
+  padding: 0;
+}
+/* SIDEBAR ACTIONS */
+.sidebar-actions {
+  padding: 6px 9px;
+}
+.new-chat,
+.code-mode {
+  width: 100%;
+  height: 37px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+  transition:
+    background .15s ease,
+    transform .1s ease;
+}
+.new-chat {
+  margin-bottom: 5px;
+  background: #111;
+  color: #fff;
+}
+.new-chat:hover {
+  background: #222;
+}
+.new-chat:active,
+.code-mode:active {
+  transform: scale(.98);
+}
+.code-mode {
+  background: transparent;
+  color: #333;
+}
+.code-mode:hover,
+.code-mode.active {
+  background: #e7e7e8;
+}
 /* HISTORY */
-
-function renderHistory() {
-
-historyList.innerHTML = “”;
-
-chats.forEach(chat => {
-
-const button =
-  document.createElement("button");
-button.type = "button";
-button.className = "history-item";
-if (chat.id === currentChatId) {
-  button.classList.add("active");
+.history {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 5px 9px;
 }
-button.textContent =
-  chat.title || "Новый чат";
-button.onclick = () => {
-  openChat(chat.id);
-};
-historyList.appendChild(button);
-
-});
+.history::-webkit-scrollbar {
+  width: 5px;
 }
-
+.history::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 10px;
+}
+.history-title {
+  padding: 7px;
+  font-size: 11px;
+  color: #888;
+}
+.history-item {
+  width: 100%;
+  min-height: 34px;
+  margin-bottom: 2px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: transparent;
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background .15s ease;
+}
+.history-item:hover,
+.history-item.active {
+  background: #e5e5e6;
+}
+.sidebar-bottom {
+  padding: 8px;
+}
+.exit-button {
+  width: 100%;
+  height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  text-align: left;
+  padding: 0 9px;
+  font-size: 12px;
+}
+.exit-button:hover {
+  background: #e9e9ea;
+}
+/* MAIN */
+.main {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  background: #fff;
+}
+.topbar {
+  height: 48px;
+  border-bottom: 1px solid #ededed;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, .96);
+}
+.mobile-menu {
+  display: none;
+  background: transparent;
+  color: #222;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 3px 5px;
+  border-radius: 7px;
+}
+.mobile-menu:hover {
+  background: #f1f1f1;
+}
+.mobile-title {
+  display: none;
+}
 /* CHAT */
-
-function createChat() {
-
-const chat = {
-id: Date.now().toString(),
-title: “Новый чат”,
-messages: [],
-createdAt: Date.now()
-};
-
-chats.unshift(chat);
-
-currentChatId = chat.id;
-
-saveChats();
-renderHistory();
-renderChat();
-
-closeSidebar();
-
-input.focus();
+.chat {
+  height: calc(100% - 48px);
+  position: relative;
 }
-
-function openChat(id) {
-
-const chat =
-chats.find(item => item.id === id);
-
-if (!chat) return;
-
-currentChatId = id;
-
-renderHistory();
-renderChat();
-
-closeSidebar();
-
-input.focus();
+.messages {
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px 12px 105px;
+  scroll-behavior: smooth;
 }
-
-function ensureChat() {
-
-let chat = getChat();
-
-if (!chat) {
-createChat();
-chat = getChat();
+.messages::-webkit-scrollbar {
+  width: 6px;
 }
-
-return chat;
+.messages::-webkit-scrollbar-thumb {
+  background: #d8d8d8;
+  border-radius: 10px;
 }
-
-function renderChat() {
-
-messages.innerHTML = “”;
-
-const chat = getChat();
-
-if (!chat || !chat.messages.length) {
-
-messages.innerHTML = `
-  <div class="welcome">
-    <div class="welcome-mark">M</div>
-    <h1>Чем могу помочь?</h1>
-    <p>Напиши сообщение Mirror</p>
-  </div>
-`;
-return;
-
+/* WELCOME */
+.welcome {
+  min-height: calc(100% - 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
-
-chat.messages.forEach(message => {
-
-addMessage(
-  message.role,
-  message.content || "",
-  false,
-  message.image || null
-);
-
-});
-
-scrollBottom();
+.welcome-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: #111;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .08);
 }
-
-/* MESSAGE */
-
-function addMessage(
-role,
-text,
-scroll = true,
-image = null
-) {
-
-const message =
-document.createElement(“div”);
-
-message.className =
-message ${role};
-
-const content =
-document.createElement(“div”);
-
-content.className =
-“message-content”;
-
-if (image) {
-
-const img =
-  document.createElement("img");
-img.className =
-  "message-image";
-img.src = image;
-img.alt = "Изображение";
-content.appendChild(img);
-
+.welcome h1 {
+  margin: 0 0 5px;
+  font-size: 23px;
+  letter-spacing: -.4px;
 }
-
-if (text) {
-
-const textElement =
-  document.createElement("div");
-textElement.innerHTML =
-  formatText(text);
-content.appendChild(textElement);
-
+.welcome p {
+  margin: 0;
+  color: #888;
+  font-size: 13px;
 }
-
-message.appendChild(content);
-
-messages.appendChild(message);
-
-if (scroll) {
-scrollBottom();
+/* MESSAGES */
+.message {
+  max-width: 760px;
+  margin: 0 auto 16px;
+  font-size: 14px;
+  line-height: 1.5;
 }
-
-return message;
+.message.user {
+  display: flex;
+  justify-content: flex-end;
 }
-
-/* TEXT */
-
-function escapeHtml(text) {
-
-return String(text)
-.replace(/&/g, “&”)
-.replace(/</g, “<”)
-.replace(/>/g, “>”)
-.replace(/”/g, “"”)
-.replace(/’/g, “'”);
+.message.user .message-content {
+  max-width: 80%;
+  padding: 9px 12px;
+  background: #f0f0f0;
+  border-radius: 15px;
+  color: #171717;
 }
-
-function formatText(text) {
-
-let result =
-escapeHtml(text);
-
-result =
-result.replace(
-/([\s\S]*?)/g,
-(_, code) => {
-
-    code =
-      code
-        .replace(/^\w+\n/, "")
-        .trim();
-    return `
-      <div class="code-block">
-        <button
-          class="copy-code"
-          type="button"
-          onclick="copyCode(this)"
-        >
-          Копировать
-        </button>
-        <pre>${code}</pre>
-      </div>
-    `;
-  }
-);
-
-result =
-result.replace(
-/**(.*?)**/g,
-“$1”
-);
-
-return result.replace(
-/\n/g,
-“”
-);
+.message-content {
+  overflow-wrap: anywhere;
 }
-
-window.copyCode = function(button) {
-
-const code =
-button.parentElement
-.querySelector(“pre”);
-
-if (!code) return;
-
-navigator.clipboard
-.writeText(code.innerText)
-.then(() => {
-
-  const old =
-    button.textContent;
-  button.textContent =
-    "Скопировано";
-  setTimeout(() => {
-    button.textContent = old;
-  }, 1000);
-});
-
-};
-
+.message-image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 350px;
+  border-radius: 11px;
+  margin-bottom: 7px;
+  object-fit: contain;
+}
 /* THINKING */
-
-function showThinking() {
-
-removeThinking();
-
-const element =
-document.createElement(“div”);
-
-element.id =
-“thinkingMessage”;
-
-element.className =
-“message assistant thinking-message”;
-
-element.innerHTML = <div class="message-content"> <span class="thinking-text"> Думаю<span class="thinking-dots">...</span> </span> </div>;
-
-messages.appendChild(element);
-
-scrollBottom();
+.thinking-message {
+  opacity: .65;
 }
-
-function removeThinking() {
-
-const element =
-$(“thinkingMessage”);
-
-if (element) {
-element.remove();
+.thinking-text {
+  color: #777;
+  font-size: 13px;
 }
+.thinking-dots {
+  display: inline-block;
+  width: 18px;
+  text-align: left;
+  animation: thinkingDots 1.2s infinite;
 }
-
-/* IMAGE */
-
-imageButton.onclick = () => {
-
-if (generating) return;
-
-imageInput.click();
-};
-
-imageInput.onchange = () => {
-
-const file =
-imageInput.files?.[0];
-
-if (!file) return;
-
-if (
-file.type &&
-!file.type.startsWith(“image/”)
-) {
-
-alert("Выбери изображение.");
-imageInput.value = "";
-return;
-
+@keyframes thinkingDots {
+  0%,
+  100% {
+    opacity: .2;
+  }
+  50% {
+    opacity: 1;
+  }
 }
-
-const reader =
-new FileReader();
-
-reader.onload = () => {
-
-selectedImage =
-  reader.result;
-previewImage.src =
-  selectedImage;
-imagePreview.classList.add("show");
-input.focus();
-
-};
-
-reader.onerror = () => {
-
-alert(
-  "Не удалось загрузить изображение."
-);
-selectedImage = null;
-imageInput.value = "";
-
-};
-
-reader.readAsDataURL(file);
-};
-
-removeImage.onclick = () => {
-
-selectedImage = null;
-
-imageInput.value = “”;
-
-previewImage.src = “”;
-
-imagePreview.classList.remove(“show”);
-
-input.focus();
-};
-
-/* SEND */
-
-async function sendMessage() {
-
-if (generating) return;
-
-const text =
-input.value.trim();
-
-if (!text && !selectedImage) {
-return;
-}
-
-const chat =
-ensureChat();
-
-const image =
-selectedImage || null;
-
-/*
-ВАЖНО:
-Передаём картинки из предыдущих
-сообщений тоже.
-*/
-
-const history =
-chat.messages
-.slice(-30)
-.map(message => ({
-role: message.role,
-content: message.content || “”,
-image: message.image || null
-}));
-
-chat.messages.push({
-role: “user”,
-content: text,
-image: image
-});
-
-if (chat.title === “Новый чат”) {
-
-const title =
-  text ||
-  "Изображение";
-chat.title =
-  title.length > 35
-    ? title.slice(0, 35) + "..."
-    : title;
-
-}
-
-saveChats();
-renderHistory();
-
-input.value = “”;
-
-resizeInput();
-
-selectedImage = null;
-
-imageInput.value = “”;
-
-previewImage.src = “”;
-
-imagePreview.classList.remove(“show”);
-
-addMessage(
-“user”,
-text,
-true,
-image
-);
-
-showThinking();
-
-generating = true;
-
-sendButton.disabled = true;
-imageButton.disabled = true;
-
-try {
-
-const response =
-  await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: text,
-      mode:
-        codeMode
-          ? "code"
-          : "normal",
-      image: image,
-      history: history
-    })
-  });
-if (!response.ok) {
-  const error =
-    await response.text();
-  throw new Error(
-    error ||
-    `Ошибка ${response.status}`
+/* COMPOSER */
+.composer-area {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 7px 10px 7px;
+  background: linear-gradient(
+    to top,
+    #fff 72%,
+    rgba(255, 255, 255, 0)
   );
 }
-removeThinking();
-const assistant =
-  addMessage(
-    "assistant",
-    "",
-    true
-  );
-const content =
-  assistant.querySelector(
-    ".message-content"
-  );
-const reader =
-  response.body.getReader();
-const decoder =
-  new TextDecoder();
-let answer = "";
-while (true) {
-  const result =
-    await reader.read();
-  if (result.done) break;
-  answer +=
-    decoder.decode(
-      result.value,
-      { stream: true }
-    );
-  content.innerHTML =
-    formatText(answer);
-  scrollBottom();
+.composer {
+  width: 100%;
+  max-width: 760px;
+  min-height: 44px;
+  margin: 0 auto;
+  padding: 5px;
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  background: rgba(255, 255, 255, .98);
+  border: 1px solid #d5d5d5;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .035);
+  transition:
+    border-color .15s ease,
+    box-shadow .15s ease;
 }
-chat.messages.push({
-  role: "assistant",
-  content: answer,
-  image: null
-});
-saveChats();
-
-} catch (error) {
-
-console.error(error);
-removeThinking();
-const errorText =
-  "Ошибка: " +
-  (error.message ||
-    "Не удалось получить ответ.");
-addMessage(
-  "assistant",
-  errorText,
-  true
-);
-chat.messages.push({
-  role: "assistant",
-  content: errorText,
-  image: null
-});
-saveChats();
-
-} finally {
-
-generating = false;
-sendButton.disabled = false;
-imageButton.disabled = false;
-input.focus();
-
+.composer:focus-within {
+  border-color: #bdbdbd;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, .055);
 }
+.image-button,
+.send-button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background .15s ease,
+    transform .1s ease;
 }
-
-/* INPUT */
-
-sendButton.onclick =
-sendMessage;
-
-input.onkeydown =
-event => {
-
-if (
-  event.key === "Enter" &&
-  !event.shiftKey
-) {
-  event.preventDefault();
-  sendMessage();
+.image-button {
+  background: #f0f0f0;
+  font-size: 16px;
 }
-
-};
-
-input.oninput =
-resizeInput;
-
-function resizeInput() {
-
-input.style.height =
-“auto”;
-
-input.style.height =
-Math.min(
-input.scrollHeight,
-130
-) + “px”;
+.image-button:hover {
+  background: #e6e6e6;
 }
-
-/* CODE MODE */
-
-codeModeButton.onclick = () => {
-
-codeMode =
-!codeMode;
-
-codeModeButton.classList.toggle(
-“active”,
-codeMode
-);
-
-modeIndicator.classList.toggle(
-“show”,
-codeMode
-);
-};
-
-/* MENU */
-
-function openSidebar() {
-sidebar.classList.add(“open”);
+.send-button {
+  background: #111;
+  color: #fff;
+  font-size: 18px;
 }
-
-function closeSidebar() {
-sidebar.classList.remove(“open”);
+.send-button:hover {
+  background: #252525;
 }
-
-mobileMenu.onclick =
-openSidebar;
-
-closeMenu.onclick =
-closeSidebar;
-
-exitButton.onclick =
-closeSidebar;
-
-/* NEW CHAT */
-
-newChatButton.onclick =
-createChat;
-
-/* SCROLL */
-
-function scrollBottom() {
-
-requestAnimationFrame(() => {
-
-messages.scrollTop =
-  messages.scrollHeight;
-
-});
+.image-button:active,
+.send-button:active {
+  transform: scale(.94);
 }
-
-/* START */
-
-if (chats.length) {
-
-currentChatId =
-chats[0].id;
-
-renderHistory();
-renderChat();
-
-} else {
-
-renderHistory();
-renderChat();
-
+.image-button:disabled,
+.send-button:disabled {
+  opacity: .5;
+  cursor: default;
+  transform: none;
 }
-
-resizeInput();
+#messageInput {
+  flex: 1;
+  min-width: 0;
+  max-height: 130px;
+  padding: 7px 3px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #171717;
+  font-size: 14px;
+  line-height: 1.35;
+}
+#messageInput::placeholder {
+  color: #999;
+}
+/* IMAGE PREVIEW */
+.image-preview {
+  display: none;
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto 5px;
+  padding: 5px;
+  background: #f7f7f8;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .03);
+}
+.image-preview.show {
+  display: block;
+}
+.image-preview img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 120px;
+  border-radius: 7px;
+  object-fit: contain;
+}
+.remove-image {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .72);
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.remove-image:hover {
+  background: #111;
+}
+/* MODE */
+.mode-indicator {
+  display: none;
+  width: fit-content;
+  margin: 0 auto 4px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: #eee;
+  color: #555;
+  font-size: 10px;
+}
+.mode-indicator.show {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+/* DISCLAIMER */
+.disclaimer {
+  margin: 4px auto 0;
+  max-width: 760px;
+  text-align: center;
+  font-size: 8px;
+  color: #999;
+}
+/* CODE */
+.code-block {
+  position: relative;
+  margin: 9px 0;
+  border-radius: 9px;
+  background: #181818;
+  color: #f5f5f5;
+  overflow: hidden;
+  border: 1px solid #292929;
+}
+.code-block pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.copy-code {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #333;
+  color: #eee;
+  cursor: pointer;
+  font-size: 10px;
+}
+.copy-code:hover {
+  background: #444;
+}
+/* MOBILE */
+@media (max-width: 700px) {
+  .sidebar {
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform .2s ease;
+    box-shadow: 7px 0 25px rgba(0, 0, 0, .15);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .close-menu {
+    display: block;
+  }
+  .mobile-menu {
+    display: block;
+  }
+  .mobile-title {
+    display: block;
+    margin-left: 8px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .topbar {
+    height: 45px;
+  }
+  .chat {
+    height: calc(100% - 45px);
+  }
+  .messages {
+    padding: 12px 8px 100px;
+  }
+  .message {
+    font-size: 14px;
+  }
+  .message.user .message-content {
+    max-width: 88%;
+  }
+  .message-image {
+    max-height: 300px;
+  }
+  .composer-area {
+    padding: 5px 7px 6px;
+  }
+  .composer {
+    min-height: 42px;
+    border-radius: 13px;
+  }
+  .image-button,
+  .send-button {
+    width: 31px;
+    min-width: 31px;
+    height: 31px;
+  }
+  #messageInput {
+    font-size: 14px;
+  }
+  .disclaimer {
+    font-size: 8px;
+  }
+}
