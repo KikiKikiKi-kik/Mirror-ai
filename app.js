@@ -1,56 +1,44 @@
 const STORAGE_KEY = “mirror_chats_v1”;
 
-const messagesEl = document.getElementById(“messages”);
-const messageInput = document.getElementById(“messageInput”);
-const sendButton = document.getElementById(“sendButton”);
+const $ = id => document.getElementById(id);
 
-const imageButton = document.getElementById(“imageButton”);
-const imageInput = document.getElementById(“imageInput”);
-const imagePreview = document.getElementById(“imagePreview”);
-const previewImage = document.getElementById(“previewImage”);
-const removeImage = document.getElementById(“removeImage”);
+const messages = $(“messages”);
+const input = $(“messageInput”);
+const sendButton = $(“sendButton”);
 
-const historyList = document.getElementById(“historyList”);
+const imageButton = $(“imageButton”);
+const imageInput = $(“imageInput”);
+const imagePreview = $(“imagePreview”);
+const previewImage = $(“previewImage”);
+const removeImage = $(“removeImage”);
 
-const newChatButton = document.getElementById(“newChat”);
-const codeModeButton = document.getElementById(“codeMode”);
+const historyList = $(“historyList”);
 
-const modeIndicator = document.getElementById(“modeIndicator”);
+const sidebar = $(“sidebar”);
+const mobileMenu = $(“mobileMenu”);
+const closeMenu = $(“closeMenu”);
+const exitButton = $(“exitButton”);
 
-const mobileMenu = document.getElementById(“mobileMenu”);
-const closeMenu = document.getElementById(“closeMenu”);
-const exitButton = document.getElementById(“exitButton”);
-const sidebar = document.getElementById(“sidebar”);
+const newChatButton = $(“newChat”);
+const codeModeButton = $(“codeMode”);
+const modeIndicator = $(“modeIndicator”);
 
 let chats = loadChats();
-
 let currentChatId = null;
-
 let selectedImage = null;
-
 let codeMode = false;
-
 let generating = false;
 
-/* =========================
-STORAGE
-========================= */
+/* STORAGE */
 
 function loadChats() {
 try {
-const saved = localStorage.getItem(STORAGE_KEY);
+const data = localStorage.getItem(STORAGE_KEY);
+const parsed = data ? JSON.parse(data) : [];
 
-if (!saved) {
-  return [];
-}
-const parsed = JSON.parse(saved);
-if (!Array.isArray(parsed)) {
-  return [];
-}
-return parsed;
+return Array.isArray(parsed) ? parsed : [];
 
-} catch (error) {
-console.error(“Не удалось загрузить чаты:”, error);
+} catch {
 return [];
 }
 }
@@ -62,13 +50,42 @@ STORAGE_KEY,
 JSON.stringify(chats)
 );
 } catch (error) {
-console.error(“Не удалось сохранить чаты:”, error);
+console.error(“Ошибка сохранения:”, error);
 }
 }
 
-/* =========================
-CHAT
-========================= */
+function getChat() {
+return chats.find(
+chat => chat.id === currentChatId
+);
+}
+
+/* HISTORY */
+
+function renderHistory() {
+
+historyList.innerHTML = “”;
+
+chats.forEach(chat => {
+
+const button =
+  document.createElement("button");
+button.type = "button";
+button.className = "history-item";
+if (chat.id === currentChatId) {
+  button.classList.add("active");
+}
+button.textContent =
+  chat.title || "Новый чат";
+button.onclick = () => {
+  openChat(chat.id);
+};
+historyList.appendChild(button);
+
+});
+}
+
+/* CHAT */
 
 function createChat() {
 
@@ -84,109 +101,58 @@ chats.unshift(chat);
 currentChatId = chat.id;
 
 saveChats();
-
 renderHistory();
-
 renderChat();
 
 closeSidebar();
 
-messageInput.focus();
+input.focus();
 }
-
-function getCurrentChat() {
-return chats.find(
-chat => chat.id === currentChatId
-);
-}
-
-function ensureChat() {
-
-if (currentChatId && getCurrentChat()) {
-return getCurrentChat();
-}
-
-createChat();
-
-return getCurrentChat();
-}
-
-/* =========================
-RENDER HISTORY
-========================= */
-
-function renderHistory() {
-
-historyList.innerHTML = “”;
-
-if (chats.length === 0) {
-return;
-}
-
-chats.forEach(chat => {
-
-const item = document.createElement("button");
-item.type = "button";
-item.className = "history-item";
-if (chat.id === currentChatId) {
-  item.classList.add("active");
-}
-item.textContent =
-  chat.title || "Новый чат";
-item.addEventListener(
-  "click",
-  () => openChat(chat.id)
-);
-historyList.appendChild(item);
-
-});
-}
-
-/* =========================
-OPEN CHAT
-========================= */
 
 function openChat(id) {
 
-const chat = chats.find(
-item => item.id === id
-);
+const chat =
+chats.find(item => item.id === id);
 
-if (!chat) {
-return;
-}
+if (!chat) return;
 
 currentChatId = id;
 
 renderHistory();
-
 renderChat();
 
 closeSidebar();
 
-messageInput.focus();
+input.focus();
 }
 
-/* =========================
-RENDER CHAT
-========================= */
+function ensureChat() {
+
+let chat = getChat();
+
+if (!chat) {
+createChat();
+chat = getChat();
+}
+
+return chat;
+}
 
 function renderChat() {
 
-messagesEl.innerHTML = “”;
+messages.innerHTML = “”;
 
-const chat = getCurrentChat();
+const chat = getChat();
 
-if (!chat || chat.messages.length === 0) {
+if (!chat || !chat.messages.length) {
 
-const welcome = document.createElement("div");
-welcome.className = "welcome";
-welcome.innerHTML = `
-  <div class="welcome-mark">M</div>
-  <h1>Чем могу помочь?</h1>
-  <p>Напиши сообщение Mirror</p>
+messages.innerHTML = `
+  <div class="welcome">
+    <div class="welcome-mark">M</div>
+    <h1>Чем могу помочь?</h1>
+    <p>Напиши сообщение Mirror</p>
+  </div>
 `;
-messagesEl.appendChild(welcome);
 return;
 
 }
@@ -202,30 +168,28 @@ addMessage(
 
 });
 
-scrollToBottom();
+scrollBottom();
 }
 
-/* =========================
-ADD MESSAGE
-========================= */
+/* MESSAGE */
 
 function addMessage(
 role,
-content,
+text,
 scroll = true,
 image = null
 ) {
 
-const wrapper =
+const message =
 document.createElement(“div”);
 
-wrapper.className =
+message.className =
 message ${role};
 
-const contentEl =
+const content =
 document.createElement(“div”);
 
-contentEl.className =
+content.className =
 “message-content”;
 
 if (image) {
@@ -235,40 +199,37 @@ const img =
 img.className =
   "message-image";
 img.src = image;
-img.alt =
-  "Изображение";
-contentEl.appendChild(img);
+img.alt = "Изображение";
+content.appendChild(img);
 
 }
 
-if (content) {
+if (text) {
 
-const textEl =
+const textElement =
   document.createElement("div");
-textEl.innerHTML =
-  formatText(content);
-contentEl.appendChild(textEl);
+textElement.innerHTML =
+  formatText(text);
+content.appendChild(textElement);
 
 }
 
-wrapper.appendChild(contentEl);
+message.appendChild(content);
 
-messagesEl.appendChild(wrapper);
+messages.appendChild(message);
 
 if (scroll) {
-scrollToBottom();
+scrollBottom();
 }
 
-return wrapper;
+return message;
 }
 
-/* =========================
-TEXT / MARKDOWN
-========================= */
+/* TEXT */
 
 function escapeHtml(text) {
 
-return text
+return String(text)
 .replace(/&/g, “&”)
 .replace(/</g, “<”)
 .replace(/>/g, “>”)
@@ -278,60 +239,55 @@ return text
 
 function formatText(text) {
 
-let result = escapeHtml(
-String(text)
-);
+let result =
+escapeHtml(text);
 
-result = result.replace(
+result =
+result.replace(
 /([\s\S]*?)/g,
 (_, code) => {
 
-  const safeCode =
-    code
-      .replace(/^\w+\n/, "")
-      .trim();
-  return `
-    <div class="code-block">
-      <button
-        class="copy-code"
-        type="button"
-        onclick="copyCode(this)"
-      >
-        Копировать
-      </button>
-      <pre>${safeCode}</pre>
-    </div>
-  `;
-}
-
+    code =
+      code
+        .replace(/^\w+\n/, "")
+        .trim();
+    return `
+      <div class="code-block">
+        <button
+          class="copy-code"
+          type="button"
+          onclick="copyCode(this)"
+        >
+          Копировать
+        </button>
+        <pre>${code}</pre>
+      </div>
+    `;
+  }
 );
 
-result = result.replace(
+result =
+result.replace(
 /**(.*?)**/g,
 “$1”
 );
 
-result = result.replace(
+return result.replace(
 /\n/g,
 “”
 );
-
-return result;
 }
 
 window.copyCode = function(button) {
 
-const pre =
-button.parentElement.querySelector(
-“pre”
-);
+const code =
+button.parentElement
+.querySelector(“pre”);
 
-if (!pre) {
-return;
-}
+if (!code) return;
 
 navigator.clipboard
-.writeText(pre.innerText)
+.writeText(code.innerText)
 .then(() => {
 
   const old =
@@ -340,148 +296,118 @@ navigator.clipboard
     "Скопировано";
   setTimeout(() => {
     button.textContent = old;
-  }, 1200);
-})
-.catch(() => {});
+  }, 1000);
+});
 
 };
 
-/* =========================
-THINKING
-========================= */
+/* THINKING */
 
 function showThinking() {
 
-const wrapper =
+removeThinking();
+
+const element =
 document.createElement(“div”);
 
-wrapper.className =
-“message assistant thinking-message”;
-
-wrapper.id =
+element.id =
 “thinkingMessage”;
 
-const content =
-document.createElement(“div”);
+element.className =
+“message assistant thinking-message”;
 
-content.className =
-“message-content”;
+element.innerHTML = <div class="message-content"> <span class="thinking-text"> Думаю<span class="thinking-dots">...</span> </span> </div>;
 
-content.innerHTML = <span class="thinking-text"> Думаю<span class="thinking-dots">...</span> </span>;
+messages.appendChild(element);
 
-wrapper.appendChild(content);
-
-messagesEl.appendChild(wrapper);
-
-scrollToBottom();
+scrollBottom();
 }
 
 function removeThinking() {
 
-const thinking =
-document.getElementById(
-“thinkingMessage”
-);
+const element =
+$(“thinkingMessage”);
 
-if (thinking) {
-thinking.remove();
+if (element) {
+element.remove();
 }
 }
 
-/* =========================
-IMAGE
-========================= */
+/* IMAGE */
 
-imageButton.addEventListener(
-“click”,
-() => {
+imageButton.onclick = () => {
 
-if (generating) {
-  return;
-}
+if (generating) return;
+
 imageInput.click();
+};
 
-}
-);
-
-imageInput.addEventListener(
-“change”,
-() => {
+imageInput.onchange = () => {
 
 const file =
-  imageInput.files &&
-  imageInput.files[0];
-if (!file) {
-  return;
-}
-const allowed = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/heic",
-  "image/heif"
-];
+imageInput.files?.[0];
+
+if (!file) return;
+
 if (
-  file.type &&
-  !allowed.includes(file.type)
+file.type &&
+!file.type.startsWith(“image/”)
 ) {
-  alert(
-    "Выбери PNG, JPG, WEBP, HEIC или HEIF."
-  );
-  imageInput.value = "";
-  return;
+
+alert("Выбери изображение.");
+imageInput.value = "";
+return;
+
 }
+
 const reader =
-  new FileReader();
+new FileReader();
+
 reader.onload = () => {
-  selectedImage =
-    reader.result;
-  previewImage.src =
-    selectedImage;
-  imagePreview.classList.add(
-    "show"
-  );
-  messageInput.focus();
+
+selectedImage =
+  reader.result;
+previewImage.src =
+  selectedImage;
+imagePreview.classList.add("show");
+input.focus();
+
 };
+
 reader.onerror = () => {
-  alert(
-    "Не удалось прочитать изображение."
-  );
-  selectedImage = null;
-  imageInput.value = "";
-};
-reader.readAsDataURL(file);
 
-}
+alert(
+  "Не удалось загрузить изображение."
 );
-
-removeImage.addEventListener(
-“click”,
-() => {
-
 selectedImage = null;
 imageInput.value = "";
-previewImage.src = "";
-imagePreview.classList.remove(
-  "show"
-);
-messageInput.focus();
 
-}
-);
+};
 
-/* =========================
-SEND
-========================= */
+reader.readAsDataURL(file);
+};
+
+removeImage.onclick = () => {
+
+selectedImage = null;
+
+imageInput.value = “”;
+
+previewImage.src = “”;
+
+imagePreview.classList.remove(“show”);
+
+input.focus();
+};
+
+/* SEND */
 
 async function sendMessage() {
 
-if (generating) {
-return;
-}
+if (generating) return;
 
 const text =
-messageInput.value.trim();
+input.value.trim();
 
 if (!text && !selectedImage) {
 return;
@@ -490,54 +416,48 @@ return;
 const chat =
 ensureChat();
 
-const imageForMessage =
-selectedImage;
+const image =
+selectedImage || null;
 
 /*
-Сохраняем предыдущую историю.
-
-Картинки тоже передаём,
-чтобы Mirror мог помнить
-изображения из этого чата.
-
+ВАЖНО:
+Передаём картинки из предыдущих
+сообщений тоже.
 */
 
-const conversationHistory =
+const history =
 chat.messages
 .slice(-30)
-.map(item => ({
-role: item.role,
-content: item.content || “”,
-image: item.image || null
+.map(message => ({
+role: message.role,
+content: message.content || “”,
+image: message.image || null
 }));
 
 chat.messages.push({
 role: “user”,
 content: text,
-image: imageForMessage || null
+image: image
 });
 
-if (
-chat.title === “Новый чат”
-) {
+if (chat.title === “Новый чат”) {
 
-const titleSource =
+const title =
   text ||
   "Изображение";
 chat.title =
-  titleSource.length > 35
-    ? titleSource.slice(0, 35) + "..."
-    : titleSource;
+  title.length > 35
+    ? title.slice(0, 35) + "..."
+    : title;
 
 }
 
 saveChats();
-
 renderHistory();
 
-messageInput.value = “”;
+input.value = “”;
 
-autoResize();
+resizeInput();
 
 selectedImage = null;
 
@@ -545,15 +465,13 @@ imageInput.value = “”;
 
 previewImage.src = “”;
 
-imagePreview.classList.remove(
-“show”
-);
+imagePreview.classList.remove(“show”);
 
 addMessage(
 “user”,
 text,
 true,
-imageForMessage || null
+image
 );
 
 showThinking();
@@ -561,105 +479,86 @@ showThinking();
 generating = true;
 
 sendButton.disabled = true;
-
 imageButton.disabled = true;
 
 try {
 
 const response =
-  await fetch(
-    "/api/chat",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
-      body: JSON.stringify({
-        message: text,
-        mode:
-          codeMode
-            ? "code"
-            : "normal",
-        image:
-          imageForMessage || null,
-        history:
-          conversationHistory
-      })
-    }
-  );
+  await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: text,
+      mode:
+        codeMode
+          ? "code"
+          : "normal",
+      image: image,
+      history: history
+    })
+  });
 if (!response.ok) {
-  const errorText =
+  const error =
     await response.text();
   throw new Error(
-    errorText ||
+    error ||
     `Ошибка ${response.status}`
   );
 }
 removeThinking();
-const assistantWrapper =
+const assistant =
   addMessage(
     "assistant",
     "",
     true
   );
-const assistantContent =
-  assistantWrapper.querySelector(
+const content =
+  assistant.querySelector(
     ".message-content"
   );
-let fullText = "";
 const reader =
   response.body.getReader();
 const decoder =
   new TextDecoder();
+let answer = "";
 while (true) {
-  const {
-    value,
-    done
-  } = await reader.read();
-  if (done) {
-    break;
-  }
-  const chunk =
+  const result =
+    await reader.read();
+  if (result.done) break;
+  answer +=
     decoder.decode(
-      value,
+      result.value,
       { stream: true }
     );
-  fullText += chunk;
-  assistantContent.innerHTML =
-    formatText(fullText);
-  scrollToBottom();
+  content.innerHTML =
+    formatText(answer);
+  scrollBottom();
 }
-/*
-  Сохраняем ответ Mirror
-  в текущий чат.
-*/
 chat.messages.push({
   role: "assistant",
-  content: fullText,
+  content: answer,
   image: null
 });
 saveChats();
-renderHistory();
 
 } catch (error) {
 
 console.error(error);
 removeThinking();
-const errorMessage =
+const errorText =
   "Ошибка: " +
-  (
-    error.message ||
-    "Не удалось получить ответ."
-  );
+  (error.message ||
+    "Не удалось получить ответ.");
 addMessage(
   "assistant",
-  errorMessage,
+  errorText,
   true
 );
 chat.messages.push({
   role: "assistant",
-  content: errorMessage,
+  content: errorText,
   image: null
 });
 saveChats();
@@ -669,17 +568,17 @@ saveChats();
 generating = false;
 sendButton.disabled = false;
 imageButton.disabled = false;
-messageInput.focus();
+input.focus();
 
 }
 }
 
-/* =========================
-ENTER
-========================= */
+/* INPUT */
 
-messageInput.addEventListener(
-“keydown”,
+sendButton.onclick =
+sendMessage;
+
+input.onkeydown =
 event => {
 
 if (
@@ -690,60 +589,42 @@ if (
   sendMessage();
 }
 
-}
-);
+};
 
-sendButton.addEventListener(
-“click”,
-sendMessage
-);
+input.oninput =
+resizeInput;
 
-/* =========================
-AUTO RESIZE
-========================= */
+function resizeInput() {
 
-function autoResize() {
-
-messageInput.style.height =
+input.style.height =
 “auto”;
 
-messageInput.style.height =
+input.style.height =
 Math.min(
-messageInput.scrollHeight,
-180
+input.scrollHeight,
+130
 ) + “px”;
 }
 
-messageInput.addEventListener(
-“input”,
-autoResize
-);
+/* CODE MODE */
 
-/* =========================
-CODE MODE
-========================= */
-
-codeModeButton.addEventListener(
-“click”,
-() => {
+codeModeButton.onclick = () => {
 
 codeMode =
-  !codeMode;
-modeIndicator.classList.toggle(
-  "show",
-  codeMode
-);
+!codeMode;
+
 codeModeButton.classList.toggle(
-  "active",
-  codeMode
+“active”,
+codeMode
 );
 
-}
+modeIndicator.classList.toggle(
+“show”,
+codeMode
 );
+};
 
-/* =========================
-MOBILE MENU
-========================= */
+/* MENU */
 
 function openSidebar() {
 sidebar.classList.add(“open”);
@@ -753,61 +634,47 @@ function closeSidebar() {
 sidebar.classList.remove(“open”);
 }
 
-mobileMenu.addEventListener(
-“click”,
-openSidebar
-);
+mobileMenu.onclick =
+openSidebar;
 
-closeMenu.addEventListener(
-“click”,
-closeSidebar
-);
+closeMenu.onclick =
+closeSidebar;
 
-exitButton.addEventListener(
-“click”,
-closeSidebar
-);
+exitButton.onclick =
+closeSidebar;
 
-/* =========================
-NEW CHAT
-========================= */
+/* NEW CHAT */
 
-newChatButton.addEventListener(
-“click”,
-createChat
-);
+newChatButton.onclick =
+createChat;
 
-/* =========================
-SCROLL
-========================= */
+/* SCROLL */
 
-function scrollToBottom() {
+function scrollBottom() {
 
 requestAnimationFrame(() => {
 
-messagesEl.scrollTop =
-  messagesEl.scrollHeight;
+messages.scrollTop =
+  messages.scrollHeight;
 
 });
 }
 
-/* =========================
-START
-========================= */
+/* START */
 
-if (chats.length > 0) {
+if (chats.length) {
 
 currentChatId =
 chats[0].id;
 
 renderHistory();
-
 renderChat();
 
 } else {
 
 renderHistory();
+renderChat();
 
 }
 
-autoResize();
+resizeInput();
