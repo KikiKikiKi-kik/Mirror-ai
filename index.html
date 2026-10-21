@@ -2,132 +2,97 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-
-<meta
-name=“viewport”
-content=“width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no”
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mirror</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="app">
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="brand">
-      <span class="brand-mark">M</span>
-      <span>Mirror</span>
-    </div>
-    <button id="closeMenu" class="close-menu" type="button">
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+<div class="sidebar-header">
+  <div class="brand">
+    <span class="brand-mark">M</span>
+    <span>Mirror</span>
+  </div>
+  <button id="closeMenu" class="close-menu">×</button>
+</div>
+<button id="newChat" class="new-chat">
+  ＋ Новый чат
+</button>
+<button id="codeMode" class="code-mode">
+  &lt;/&gt; Mirror Code
+</button>
+<div class="history">
+  <div class="history-title">Сегодня</div>
+  <div id="historyList"></div>
+</div>
+<button id="exitButton" class="exit-button">
+  ↪ Закрыть меню
+</button>
+  </aside>
+  <main class="main">
+<header class="topbar">
+  <button id="mobileMenu" class="mobile-menu">
+    ☰
+  </button>
+  <span class="mobile-title">Mirror</span>
+</header>
+<div id="messages" class="messages">
+  <div class="welcome">
+    <div class="welcome-mark">M</div>
+    <h1>Чем могу помочь?</h1>
+    <p>Напиши сообщение Mirror</p>
+  </div>
+</div>
+<div class="composer-area">
+  <div id="modeIndicator" class="mode-indicator">
+    &lt;/&gt; Mirror Code
+  </div>
+  <div id="imagePreview" class="image-preview">
+    <img
+      id="previewImage"
+      alt="Предпросмотр"
+    >
+    <button
+      id="removeImage"
+      class="remove-image"
+    >
       ×
     </button>
   </div>
-  <div class="sidebar-top">
-    <button id="newChat" class="new-chat" type="button">
-      <span>＋</span>
-      <span>Новый чат</span>
+  <div class="composer">
+    <button
+      id="imageButton"
+      class="image-button"
+      type="button"
+    >
+      🖼️
     </button>
-    <button id="codeMode" class="code-mode" type="button">
-      <span>&lt;/&gt;</span>
-      <span>Mirror Code</span>
+    <input
+      id="imageInput"
+      type="file"
+      accept="image/*"
+      hidden
+    >
+    <textarea
+      id="messageInput"
+      rows="1"
+      placeholder="Сообщение Mirror"
+    ></textarea>
+    <button
+      id="sendButton"
+      class="send-button"
+      type="button"
+    >
+      ↑
     </button>
   </div>
-  <div class="history">
-    <div class="history-title">
-      Сегодня
-    </div>
-    <div id="historyList"></div>
+  <div class="disclaimer">
+    Mirror может ошибаться. Проверяйте важную информацию.
   </div>
-  <div class="sidebar-bottom">
-    <button id="exitButton" class="exit-button" type="button">
-      <span>↪</span>
-      <span>Закрыть меню</span>
-    </button>
-  </div>
-</aside>
-<main class="main">
-  <header class="topbar">
-    <button id="mobileMenu" class="mobile-menu" type="button">
-      ☰
-    </button>
-    <span id="mobileTitle" class="mobile-title">
-      Mirror
-    </span>
-  </header>
-  <section class="chat">
-    <div id="messages" class="messages">
-      <div class="welcome" id="welcome">
-        <div class="welcome-mark">
-          M
-        </div>
-        <h1>
-          Чем могу помочь?
-        </h1>
-        <p>
-          Напиши сообщение Mirror
-        </p>
-      </div>
-    </div>
-    <div class="composer-area">
-      <div id="modeIndicator" class="mode-indicator">
-        <span>&lt;/&gt;</span>
-        <span>Mirror Code</span>
-      </div>
-      <!-- Предпросмотр изображения -->
-      <div id="imagePreview" class="image-preview">
-        <img
-          id="previewImage"
-          src=""
-          alt="Предпросмотр изображения"
-        >
-        <button
-          id="removeImage"
-          class="remove-image"
-          type="button"
-        >
-          ×
-        </button>
-      </div>
-      <div class="composer">
-        <!-- КНОПКА ФОТО -->
-        <button
-          id="imageButton"
-          class="image-button"
-          type="button"
-          aria-label="Добавить фото"
-          title="Добавить фото"
-        >
-          🖼️
-        </button>
-        <input
-          id="imageInput"
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
-          hidden
-        >
-        <textarea
-          id="messageInput"
-          rows="1"
-          placeholder="Сообщение Mirror"
-          autocomplete="off"
-          spellcheck="true"
-        ></textarea>
-        <button
-          id="sendButton"
-          class="send-button"
-          type="button"
-          aria-label="Отправить"
-        >
-          ↑
-        </button>
-      </div>
-      <p class="disclaimer">
-        Mirror может ошибаться. Проверяйте важную информацию.
-      </p>
-    </div>
-  </section>
-</main>
-  </div>
-  <script src="app.js"></script>
+</div>
+  </main>
+</div>
+<script src="/app.js"></script>
 </body>
 </html>
