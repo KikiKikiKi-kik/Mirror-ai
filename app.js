@@ -1,990 +1,813 @@
-const sidebar = document.querySelector(".sidebar");
-const mobileMenu = document.getElementById("mobileMenu");
-const closeMenu = document.getElementById("closeMenu");
-const newChatButton = document.getElementById("newChat");
-const codeModeButton = document.getElementById("codeMode");
-const exitButton = document.getElementById("exitButton");
-const messages = document.getElementById("messages");
-const input = document.getElementById("messageInput");
-const sendButton = document.getElementById("sendButton");
-const historyList = document.getElementById("historyList");
-const mobileTitle = document.getElementById("mobileTitle");
-const modeIndicator = document.getElementById("modeIndicator");
-const imageButton = document.getElementById("imageButton");
-const imageInput = document.getElementById("imageInput");
-const imagePreview = document.getElementById("imagePreview");
-const previewImage = document.getElementById("previewImage");
-const removeImageButton = document.getElementById("removeImage");
-const STORAGE_KEY = "mirror_chats_v1";
-let chats = [];
+const STORAGE_KEY = “mirror_chats_v1”;
+
+const messagesEl = document.getElementById(“messages”);
+const messageInput = document.getElementById(“messageInput”);
+const sendButton = document.getElementById(“sendButton”);
+
+const imageButton = document.getElementById(“imageButton”);
+const imageInput = document.getElementById(“imageInput”);
+const imagePreview = document.getElementById(“imagePreview”);
+const previewImage = document.getElementById(“previewImage”);
+const removeImage = document.getElementById(“removeImage”);
+
+const historyList = document.getElementById(“historyList”);
+
+const newChatButton = document.getElementById(“newChat”);
+const codeModeButton = document.getElementById(“codeMode”);
+
+const modeIndicator = document.getElementById(“modeIndicator”);
+
+const mobileMenu = document.getElementById(“mobileMenu”);
+const closeMenu = document.getElementById(“closeMenu”);
+const exitButton = document.getElementById(“exitButton”);
+const sidebar = document.getElementById(“sidebar”);
+
+let chats = loadChats();
+
 let currentChatId = null;
-let isGenerating = false;
-let codeMode = false;
+
 let selectedImage = null;
-let thinkingElement = null;
+
+let codeMode = false;
+
+let generating = false;
+
 /* =========================
-   ЧАТЫ
+STORAGE
 ========================= */
+
 function loadChats() {
-  try {
-    const saved =
-      localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      chats = JSON.parse(saved);
-    }
-    if (!Array.isArray(chats)) {
-      chats = [];
-    }
-  } catch (error) {
-    console.error(
-      "Ошибка загрузки чатов:",
-      error
-    );
-    chats = [];
-  }
+try {
+const saved = localStorage.getItem(STORAGE_KEY);
+
+if (!saved) {
+  return [];
 }
+const parsed = JSON.parse(saved);
+if (!Array.isArray(parsed)) {
+  return [];
+}
+return parsed;
+
+} catch (error) {
+console.error(“Не удалось загрузить чаты:”, error);
+return [];
+}
+}
+
 function saveChats() {
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(chats)
-    );
-  } catch (error) {
-    console.error(
-      "Ошибка сохранения чатов:",
-      error
-    );
-  }
+try {
+localStorage.setItem(
+STORAGE_KEY,
+JSON.stringify(chats)
+);
+} catch (error) {
+console.error(“Не удалось сохранить чаты:”, error);
 }
+}
+
+/* =========================
+CHAT
+========================= */
+
+function createChat() {
+
+const chat = {
+id: Date.now().toString(),
+title: “Новый чат”,
+messages: [],
+createdAt: Date.now()
+};
+
+chats.unshift(chat);
+
+currentChatId = chat.id;
+
+saveChats();
+
+renderHistory();
+
+renderChat();
+
+closeSidebar();
+
+messageInput.focus();
+}
+
 function getCurrentChat() {
-  return chats.find(
-    chat => chat.id === currentChatId
-  );
+return chats.find(
+chat => chat.id === currentChatId
+);
 }
+
+function ensureChat() {
+
+if (currentChatId && getCurrentChat()) {
+return getCurrentChat();
+}
+
+createChat();
+
+return getCurrentChat();
+}
+
 /* =========================
-   МЕНЮ
+RENDER HISTORY
 ========================= */
-function closeSidebar() {
-  sidebar.classList.remove(
-    "open"
-  );
-}
-function toggleSidebar() {
-  sidebar.classList.toggle(
-    "open"
-  );
-}
-/* =========================
-   ИСТОРИЯ ЧАТОВ
-========================= */
+
 function renderHistory() {
-  historyList.innerHTML = "";
-  [...chats]
-    .reverse()
-    .forEach(chat => {
-      const item =
-        document.createElement("div");
-      item.className =
-        "history-item";
-      item.textContent =
-        chat.title || "Новый чат";
-      item.addEventListener(
-        "click",
-        () => openChat(chat.id)
-      );
-      historyList.appendChild(
-        item
-      );
-    });
+
+historyList.innerHTML = “”;
+
+if (chats.length === 0) {
+return;
 }
-/* =========================
-   ПРИВЕТСТВИЕ
-========================= */
-function showWelcome() {
-  messages.innerHTML = "";
-  thinkingElement = null;
-  const welcome =
-    document.createElement("div");
-  welcome.className =
-    "welcome";
-  if (codeMode) {
-    welcome.innerHTML = `
-      <div class="welcome-mark">&lt;/&gt;</div>
-      <h1>Mirror Code</h1>
-      <p>
-        Чем помочь с кодом?
-      </p>
-    `;
-  } else {
-    welcome.innerHTML = `
-      <div class="welcome-mark">M</div>
-      <h1>Чем могу помочь?</h1>
-      <p>
-        Напиши сообщение Mirror
-      </p>
-    `;
-  }
-  messages.appendChild(
-    welcome
-  );
+
+chats.forEach(chat => {
+
+const item = document.createElement("button");
+item.type = "button";
+item.className = "history-item";
+if (chat.id === currentChatId) {
+  item.classList.add("active");
 }
+item.textContent =
+  chat.title || "Новый чат";
+item.addEventListener(
+  "click",
+  () => openChat(chat.id)
+);
+historyList.appendChild(item);
+
+});
+}
+
 /* =========================
-   THINK...
+OPEN CHAT
 ========================= */
-function showThinking() {
-  hideThinking();
-  thinkingElement =
-    document.createElement("div");
-  thinkingElement.className =
-    "message assistant thinking-message";
-  thinkingElement.innerHTML = `
-    <div class="message-content">
-      <span class="thinking-text">
-        think<span class="thinking-dots">...</span>
-      </span>
+
+function openChat(id) {
+
+const chat = chats.find(
+item => item.id === id
+);
+
+if (!chat) {
+return;
+}
+
+currentChatId = id;
+
+renderHistory();
+
+renderChat();
+
+closeSidebar();
+
+messageInput.focus();
+}
+
+/* =========================
+RENDER CHAT
+========================= */
+
+function renderChat() {
+
+messagesEl.innerHTML = “”;
+
+const chat = getCurrentChat();
+
+if (!chat || chat.messages.length === 0) {
+
+const welcome = document.createElement("div");
+welcome.className = "welcome";
+welcome.innerHTML = `
+  <div class="welcome-mark">M</div>
+  <h1>Чем могу помочь?</h1>
+  <p>Напиши сообщение Mirror</p>
+`;
+messagesEl.appendChild(welcome);
+return;
+
+}
+
+chat.messages.forEach(message => {
+
+addMessage(
+  message.role,
+  message.content || "",
+  false,
+  message.image || null
+);
+
+});
+
+scrollToBottom();
+}
+
+/* =========================
+ADD MESSAGE
+========================= */
+
+function addMessage(
+role,
+content,
+scroll = true,
+image = null
+) {
+
+const wrapper =
+document.createElement(“div”);
+
+wrapper.className =
+message ${role};
+
+const contentEl =
+document.createElement(“div”);
+
+contentEl.className =
+“message-content”;
+
+if (image) {
+
+const img =
+  document.createElement("img");
+img.className =
+  "message-image";
+img.src = image;
+img.alt =
+  "Изображение";
+contentEl.appendChild(img);
+
+}
+
+if (content) {
+
+const textEl =
+  document.createElement("div");
+textEl.innerHTML =
+  formatText(content);
+contentEl.appendChild(textEl);
+
+}
+
+wrapper.appendChild(contentEl);
+
+messagesEl.appendChild(wrapper);
+
+if (scroll) {
+scrollToBottom();
+}
+
+return wrapper;
+}
+
+/* =========================
+TEXT / MARKDOWN
+========================= */
+
+function escapeHtml(text) {
+
+return text
+.replace(/&/g, “&”)
+.replace(/</g, “<”)
+.replace(/>/g, “>”)
+.replace(/”/g, “"”)
+.replace(/’/g, “'”);
+}
+
+function formatText(text) {
+
+let result = escapeHtml(
+String(text)
+);
+
+result = result.replace(
+/([\s\S]*?)/g,
+(_, code) => {
+
+  const safeCode =
+    code
+      .replace(/^\w+\n/, "")
+      .trim();
+  return `
+    <div class="code-block">
+      <button
+        class="copy-code"
+        type="button"
+        onclick="copyCode(this)"
+      >
+        Копировать
+      </button>
+      <pre>${safeCode}</pre>
     </div>
   `;
-  messages.appendChild(
-    thinkingElement
-  );
-  scrollToBottom();
 }
-function hideThinking() {
-  if (!thinkingElement) {
-    return;
-  }
-  thinkingElement.remove();
-  thinkingElement = null;
+
+);
+
+result = result.replace(
+/**(.*?)**/g,
+“$1”
+);
+
+result = result.replace(
+/\n/g,
+“”
+);
+
+return result;
 }
+
+window.copyCode = function(button) {
+
+const pre =
+button.parentElement.querySelector(
+“pre”
+);
+
+if (!pre) {
+return;
+}
+
+navigator.clipboard
+.writeText(pre.innerText)
+.then(() => {
+
+  const old =
+    button.textContent;
+  button.textContent =
+    "Скопировано";
+  setTimeout(() => {
+    button.textContent = old;
+  }, 1200);
+})
+.catch(() => {});
+
+};
+
 /* =========================
-   MIRROR CODE
+THINKING
 ========================= */
-function updateModeUI() {
-  if (codeMode) {
-    codeModeButton.classList.add(
-      "active"
-    );
-    modeIndicator.classList.add(
-      "show"
-    );
-    input.placeholder =
-      "Сообщение Mirror Code";
-    mobileTitle.textContent =
-      "Mirror Code";
-  } else {
-    codeModeButton.classList.remove(
-      "active"
-    );
-    modeIndicator.classList.remove(
-      "show"
-    );
-    input.placeholder =
-      "Сообщение Mirror";
-    mobileTitle.textContent =
-      "Mirror";
-  }
+
+function showThinking() {
+
+const wrapper =
+document.createElement(“div”);
+
+wrapper.className =
+“message assistant thinking-message”;
+
+wrapper.id =
+“thinkingMessage”;
+
+const content =
+document.createElement(“div”);
+
+content.className =
+“message-content”;
+
+content.innerHTML = <span class="thinking-text"> Думаю<span class="thinking-dots">...</span> </span>;
+
+wrapper.appendChild(content);
+
+messagesEl.appendChild(wrapper);
+
+scrollToBottom();
 }
-function toggleCodeMode() {
-  if (isGenerating) {
-    return;
-  }
-  codeMode =
-    !codeMode;
-  updateModeUI();
-  const chat =
-    getCurrentChat();
-  if (chat) {
-    chat.mode =
-      codeMode
-        ? "code"
-        : "normal";
-    saveChats();
-  }
-  if (!currentChatId) {
-    showWelcome();
-  }
-  input.focus();
+
+function removeThinking() {
+
+const thinking =
+document.getElementById(
+“thinkingMessage”
+);
+
+if (thinking) {
+thinking.remove();
 }
+}
+
 /* =========================
-   НОВЫЙ ЧАТ
+IMAGE
 ========================= */
-function newChat() {
-  if (isGenerating) {
-    return;
-  }
-  currentChatId =
-    null;
-  input.value =
-    "";
-  removeSelectedImage();
-  resizeInput();
-  showWelcome();
-  closeSidebar();
-  input.focus();
-}
-/* =========================
-   СОЗДАНИЕ ЧАТА
-========================= */
-function createChat(firstMessage) {
-  const title =
-    firstMessage &&
-    firstMessage.trim()
-      ? firstMessage.trim()
-      : "Изображение";
-  const chat = {
-    id:
-      Date.now().toString(),
-    title:
-      title.length > 40
-        ? title.slice(0, 40) + "..."
-        : title,
-    mode:
-      codeMode
-        ? "code"
-        : "normal",
-    messages: []
-  };
-  chats.push(
-    chat
-  );
-  currentChatId =
-    chat.id;
-  saveChats();
-  renderHistory();
-  return chat;
-}
-/* =========================
-   ОТКРЫТЬ ЧАТ
-========================= */
-function openChat(chatId) {
-  if (isGenerating) {
-    return;
-  }
-  const chat =
-    chats.find(
-      item => item.id === chatId
-    );
-  if (!chat) {
-    return;
-  }
-  currentChatId =
-    chat.id;
-  codeMode =
-    chat.mode === "code";
-  updateModeUI();
-  messages.innerHTML =
-    "";
-  thinkingElement =
-    null;
-  chat.messages.forEach(
-    message => {
-      addMessage(
-        message.role,
-        message.content,
-        false,
-        message.image || null
-      );
-    }
-  );
-  removeSelectedImage();
-  closeSidebar();
-  scrollToBottom();
-  input.focus();
-}
-/* =========================
-   ДОБАВИТЬ СООБЩЕНИЕ
-========================= */
-function addMessage(
-  role,
-  text,
-  scroll = true,
-  image = null
-) {
-  const wrapper =
-    document.createElement("div");
-  wrapper.className =
-    "message " +
-    (
-      role === "user"
-        ? "user"
-        : "assistant"
-    );
-  const content =
-    document.createElement("div");
-  content.className =
-    "message-content";
-  if (image) {
-    const img =
-      document.createElement("img");
-    img.className =
-      "message-image";
-    img.src =
-      image;
-    img.alt =
-      "Изображение";
-    content.appendChild(
-      img
-    );
-  }
-  if (role === "assistant") {
-    const textContainer =
-      document.createElement("div");
-    renderMarkdown(
-      textContainer,
-      text || ""
-    );
-    content.appendChild(
-      textContainer
-    );
-  } else {
-    if (text) {
-      const textContainer =
-        document.createElement("div");
-      textContainer.textContent =
-        text;
-      content.appendChild(
-        textContainer
-      );
-    }
-  }
-  wrapper.appendChild(
-    content
-  );
-  messages.appendChild(
-    wrapper
-  );
-  if (scroll) {
-    scrollToBottom();
-  }
-  return content;
-}
-/* =========================
-   HTML ESCAPE
-========================= */
-function escapeHtml(text) {
-  return String(text)
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    );
-}
-/* =========================
-   MARKDOWN
-========================= */
-function renderMarkdown(
-  element,
-  text
-) {
-  const codeBlocks = [];
-  let safeText =
-    String(text).replace(
-      /```([\w.+-]*)\n?([\s\S]*?)```/g,
-      (
-        match,
-        language,
-        code
-      ) => {
-        const index =
-          codeBlocks.length;
-        codeBlocks.push({
-          language:
-            language || "code",
-          code:
-            code.replace(
-              /\n$/,
-              ""
-            )
-        });
-        return `@@CODE_BLOCK_${index}@@`;
-      }
-    );
-  let html =
-    escapeHtml(
-      safeText
-    );
-  html =
-    html.replace(
-      /\*\*(.+?)\*\*/g,
-      "<strong>$1</strong>"
-    );
-  html =
-    html.replace(
-      /__(.+?)__/g,
-      "<strong>$1</strong>"
-    );
-  html =
-    html.replace(
-      /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
-      "<em>$1</em>"
-    );
-  html =
-    html.replace(
-      /`([^`\n]+)`/g,
-      "<code class=\"inline-code\">$1</code>"
-    );
-  html =
-    html.replace(
-      /^### (.+)$/gm,
-      "<h3>$1</h3>"
-    );
-  html =
-    html.replace(
-      /^## (.+)$/gm,
-      "<h2>$1</h2>"
-    );
-  html =
-    html.replace(
-      /^# (.+)$/gm,
-      "<h1>$1</h1>"
-    );
-  html =
-    html.replace(
-      /^- (.+)$/gm,
-      "• $1"
-    );
-  html =
-    html.replace(
-      /\n/g,
-      "<br>"
-    );
-  codeBlocks.forEach(
-    (
-      block,
-      index
-    ) => {
-      const marker =
-        `@@CODE_BLOCK_${index}@@`;
-      const escapedCode =
-        escapeHtml(
-          block.code
-        );
-      const codeHtml = `
-        <pre class="code-block">
-          <div class="code-header">
-            <span>
-              ${escapeHtml(
-                block.language
-              )}
-            </span>
-            <button
-              class="copy-code"
-              type="button"
-              data-code-index="${index}"
-            >
-              Копировать
-            </button>
-          </div>
-          <code class="code-content">${escapedCode}</code>
-        </pre>
-      `;
-      html =
-        html.replace(
-          marker,
-          codeHtml
-        );
-    }
-  );
-  element.innerHTML =
-    html;
-  const buttons =
-    element.querySelectorAll(
-      ".copy-code"
-    );
-  buttons.forEach(
-    button => {
-      button.addEventListener(
-        "click",
-        async () => {
-          const index =
-            Number(
-              button.dataset.codeIndex
-            );
-          const block =
-            codeBlocks[index];
-          if (!block) {
-            return;
-          }
-          try {
-            await navigator.clipboard.writeText(
-              block.code
-            );
-            const oldText =
-              button.textContent;
-            button.textContent =
-              "Скопировано";
-            setTimeout(
-              () => {
-                button.textContent =
-                  oldText;
-              },
-              1500
-            );
-          } catch {
-            const textarea =
-              document.createElement(
-                "textarea"
-              );
-            textarea.value =
-              block.code;
-            document.body.appendChild(
-              textarea
-            );
-            textarea.select();
-            try {
-              document.execCommand(
-                "copy"
-              );
-              button.textContent =
-                "Скопировано";
-              setTimeout(
-                () => {
-                  button.textContent =
-                    "Копировать";
-                },
-                1500
-              );
-            } catch {
-              button.textContent =
-                "Не удалось скопировать";
-            }
-            textarea.remove();
-          }
-        }
-      );
-    }
-  );
-}
-/* =========================
-   ИЗОБРАЖЕНИЯ
-========================= */
+
 imageButton.addEventListener(
-  "click",
-  () => {
-    if (isGenerating) {
-      return;
-    }
-    imageInput.click();
-  }
+“click”,
+() => {
+
+if (generating) {
+  return;
+}
+imageInput.click();
+
+}
 );
+
 imageInput.addEventListener(
-  "change",
-  () => {
-    const file =
-      imageInput.files?.[0];
-    if (!file) {
-      return;
-    }
-    if (
-      !file.type.startsWith(
-        "image/"
-      )
-    ) {
-      alert(
-        "Можно выбрать только изображение."
-      );
-      imageInput.value =
-        "";
-      return;
-    }
-    const reader =
-      new FileReader();
-    reader.onload =
-      () => {
-        selectedImage = {
-          name:
-            file.name,
-          type:
-            file.type,
-          data:
-            reader.result
-        };
-        previewImage.src =
-          reader.result;
-        imagePreview.classList.add(
-          "show"
-        );
-      };
-    reader.readAsDataURL(
-      file
-    );
-  }
-);
-removeImageButton.addEventListener(
-  "click",
-  removeSelectedImage
-);
-function removeSelectedImage() {
+“change”,
+() => {
+
+const file =
+  imageInput.files &&
+  imageInput.files[0];
+if (!file) {
+  return;
+}
+const allowed = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/heic",
+  "image/heif"
+];
+if (
+  file.type &&
+  !allowed.includes(file.type)
+) {
+  alert(
+    "Выбери PNG, JPG, WEBP, HEIC или HEIF."
+  );
+  imageInput.value = "";
+  return;
+}
+const reader =
+  new FileReader();
+reader.onload = () => {
   selectedImage =
-    null;
-  imageInput.value =
-    "";
+    reader.result;
   previewImage.src =
-    "";
-  imagePreview.classList.remove(
+    selectedImage;
+  imagePreview.classList.add(
     "show"
   );
+  messageInput.focus();
+};
+reader.onerror = () => {
+  alert(
+    "Не удалось прочитать изображение."
+  );
+  selectedImage = null;
+  imageInput.value = "";
+};
+reader.readAsDataURL(file);
+
 }
+);
+
+removeImage.addEventListener(
+“click”,
+() => {
+
+selectedImage = null;
+imageInput.value = "";
+previewImage.src = "";
+imagePreview.classList.remove(
+  "show"
+);
+messageInput.focus();
+
+}
+);
+
 /* =========================
-   ОТПРАВКА
+SEND
 ========================= */
+
 async function sendMessage() {
-  if (isGenerating) {
-    return;
-  }
-  const text =
-    input.value.trim();
-  if (
-    !text &&
-    !selectedImage
-  ) {
-    return;
-  }
-  await sendChatMessage(
-    text
-  );
+
+if (generating) {
+return;
 }
-/* =========================
-   ЗАПРОС К MIRROR API
-========================= */
-async function sendChatMessage(
-  text
+
+const text =
+messageInput.value.trim();
+
+if (!text && !selectedImage) {
+return;
+}
+
+const chat =
+ensureChat();
+
+const imageForMessage =
+selectedImage;
+
+/*
+Сохраняем предыдущую историю.
+
+Картинки тоже передаём,
+чтобы Mirror мог помнить
+изображения из этого чата.
+
+*/
+
+const conversationHistory =
+chat.messages
+.slice(-30)
+.map(item => ({
+role: item.role,
+content: item.content || “”,
+image: item.image || null
+}));
+
+chat.messages.push({
+role: “user”,
+content: text,
+image: imageForMessage || null
+});
+
+if (
+chat.title === “Новый чат”
 ) {
-  isGenerating =
-    true;
-  sendButton.disabled =
-    true;
-  imageButton.disabled =
-    true;
-  input.value =
-    "";
-  resizeInput();
-  const imageForMessage =
-    selectedImage
-      ? selectedImage.data
-      : null;
-  removeSelectedImage();
-  /*
-    Если чата ещё нет,
-    создаём его.
-  */
-  if (!currentChatId) {
-    createChat(
-      text ||
-      "Изображение"
-    );
-    messages.innerHTML =
-      "";
-  }
-  const chat =
-    getCurrentChat();
-  if (!chat) {
-    isGenerating =
-      false;
-    sendButton.disabled =
-      false;
-    imageButton.disabled =
-      false;
-    return;
-  }
-  /*
-    Сохраняем режим.
-  */
-  chat.mode =
-    codeMode
-      ? "code"
-      : "normal";
-  /*
-    ВАЖНО:
-    Берём историю ДО добавления
-    текущего сообщения.
-    Поэтому текущее сообщение
-    не будет отправлено Gemini дважды.
-  */
-  const conversationHistory =
-    chat.messages
-      .slice(-30)
-      .map(item => ({
-        role:
-          item.role,
-        content:
-          item.content || ""
-      }));
-  /*
-    Теперь добавляем новое сообщение
-    пользователя в локальный чат.
-  */
-  chat.messages.push({
-    role:
-      "user",
-    content:
-      text,
-    image:
-      imageForMessage
-  });
-  saveChats();
-  /*
-    Показываем сообщение пользователя.
-  */
-  addMessage(
-    "user",
-    text,
-    true,
-    imageForMessage
-  );
-  /*
-    Показываем think...
-  */
-  showThinking();
-  /*
-    Создаём пустое место
-    для будущего ответа Mirror.
-  */
-  let assistantElement =
-    null;
-  let fullResponse =
-    "";
-  try {
-    const response =
-      await fetch(
-        "/api/chat",
-        {
-          method:
-            "POST",
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-          body:
-            JSON.stringify({
-              message:
-                text,
-              mode:
-                codeMode
-                  ? "code"
-                  : "normal",
-              image:
-                imageForMessage,
-              history:
-                conversationHistory
-            })
-        }
-      );
-    if (!response.ok) {
-      let errorText =
-        "Ошибка сервера";
-      try {
-        const errorData =
-          await response.json();
-        errorText =
-          errorData.error ||
-          errorText;
-      } catch {}
-      throw new Error(
-        errorText
-      );
-    }
-    if (!response.body) {
-      throw new Error(
-        "Сервер не вернул ответ"
-      );
-    }
-    const reader =
-      response.body.getReader();
-    const decoder =
-      new TextDecoder(
-        "utf-8"
-      );
-    let firstChunk =
-      true;
-    while (true) {
-      const {
-        value,
-        done
-      } =
-        await reader.read();
-      if (done) {
-        break;
-      }
-      const chunk =
-        decoder.decode(
-          value,
-          {
-            stream:
-              true
-          }
-        );
-      if (!chunk) {
-        continue;
-      }
-      /*
-        Как только пришёл первый текст,
-        убираем think...
-      */
-      if (firstChunk) {
-        hideThinking();
-        assistantElement =
-          addMessage(
-            "assistant",
-            "",
-            true
-          );
-        firstChunk =
-          false;
-      }
-      fullResponse +=
-        chunk;
-      renderMarkdown(
-        assistantElement,
-        fullResponse
-      );
-      scrollToBottom();
-    }
-    hideThinking();
-    /*
-      Если Gemini почему-то
-      ничего не прислал.
-    */
-    if (!fullResponse.trim()) {
-      fullResponse =
-        "Не удалось получить ответ от Mirror.";
-      if (!assistantElement) {
-        assistantElement =
-          addMessage(
-            "assistant",
-            "",
-            true
-          );
-      }
-      renderMarkdown(
-        assistantElement,
-        fullResponse
-      );
-    }
-    /*
-      Сохраняем ответ Mirror
-      в историю чата.
-      При следующем сообщении
-      он попадёт в history.
-    */
-    chat.messages.push({
-      role:
-        "assistant",
-      content:
-        fullResponse
-    });
-    saveChats();
-    renderHistory();
-  } catch (error) {
-    console.error(
-      "Mirror error:",
-      error
-    );
-    hideThinking();
-    const errorMessage =
-      "Ошибка: " +
-      (
-        error.message ||
-        "не удалось получить ответ"
-      );
-    if (!assistantElement) {
-      assistantElement =
-        addMessage(
-          "assistant",
-          "",
-          true
-        );
-    }
-    renderMarkdown(
-      assistantElement,
-      errorMessage
-    );
-  } finally {
-    hideThinking();
-    isGenerating =
-      false;
-    sendButton.disabled =
-      false;
-    imageButton.disabled =
-      false;
-    input.focus();
-    scrollToBottom();
-  }
+
+const titleSource =
+  text ||
+  "Изображение";
+chat.title =
+  titleSource.length > 35
+    ? titleSource.slice(0, 35) + "..."
+    : titleSource;
+
 }
-/* =========================
-   РАЗМЕР TEXTAREA
-========================= */
-function resizeInput() {
-  input.style.height =
-    "auto";
-  input.style.height =
-    Math.min(
-      input.scrollHeight,
-      140
-    ) + "px";
-}
-/* =========================
-   ПРОКРУТКА
-========================= */
-function scrollToBottom() {
-  messages.scrollTop =
-    messages.scrollHeight;
-}
-/* =========================
-   СОБЫТИЯ
-========================= */
-mobileMenu.addEventListener(
-  "click",
-  toggleSidebar
-);
-closeMenu.addEventListener(
-  "click",
-  closeSidebar
-);
-newChatButton.addEventListener(
-  "click",
-  newChat
-);
-codeModeButton.addEventListener(
-  "click",
-  toggleCodeMode
-);
-exitButton.addEventListener(
-  "click",
-  closeSidebar
-);
-sendButton.addEventListener(
-  "click",
-  sendMessage
-);
-input.addEventListener(
-  "input",
-  resizeInput
-);
-input.addEventListener(
-  "keydown",
-  event => {
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
-      event.preventDefault();
-      sendMessage();
-    }
-  }
-);
-/* =========================
-   ЗАПУСК
-========================= */
-loadChats();
+
+saveChats();
+
 renderHistory();
-updateModeUI();
-showWelcome();
-resizeInput();
+
+messageInput.value = “”;
+
+autoResize();
+
+selectedImage = null;
+
+imageInput.value = “”;
+
+previewImage.src = “”;
+
+imagePreview.classList.remove(
+“show”
+);
+
+addMessage(
+“user”,
+text,
+true,
+imageForMessage || null
+);
+
+showThinking();
+
+generating = true;
+
+sendButton.disabled = true;
+
+imageButton.disabled = true;
+
+try {
+
+const response =
+  await fetch(
+    "/api/chat",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body: JSON.stringify({
+        message: text,
+        mode:
+          codeMode
+            ? "code"
+            : "normal",
+        image:
+          imageForMessage || null,
+        history:
+          conversationHistory
+      })
+    }
+  );
+if (!response.ok) {
+  const errorText =
+    await response.text();
+  throw new Error(
+    errorText ||
+    `Ошибка ${response.status}`
+  );
+}
+removeThinking();
+const assistantWrapper =
+  addMessage(
+    "assistant",
+    "",
+    true
+  );
+const assistantContent =
+  assistantWrapper.querySelector(
+    ".message-content"
+  );
+let fullText = "";
+const reader =
+  response.body.getReader();
+const decoder =
+  new TextDecoder();
+while (true) {
+  const {
+    value,
+    done
+  } = await reader.read();
+  if (done) {
+    break;
+  }
+  const chunk =
+    decoder.decode(
+      value,
+      { stream: true }
+    );
+  fullText += chunk;
+  assistantContent.innerHTML =
+    formatText(fullText);
+  scrollToBottom();
+}
+/*
+  Сохраняем ответ Mirror
+  в текущий чат.
+*/
+chat.messages.push({
+  role: "assistant",
+  content: fullText,
+  image: null
+});
+saveChats();
+renderHistory();
+
+} catch (error) {
+
+console.error(error);
+removeThinking();
+const errorMessage =
+  "Ошибка: " +
+  (
+    error.message ||
+    "Не удалось получить ответ."
+  );
+addMessage(
+  "assistant",
+  errorMessage,
+  true
+);
+chat.messages.push({
+  role: "assistant",
+  content: errorMessage,
+  image: null
+});
+saveChats();
+
+} finally {
+
+generating = false;
+sendButton.disabled = false;
+imageButton.disabled = false;
+messageInput.focus();
+
+}
+}
+
+/* =========================
+ENTER
+========================= */
+
+messageInput.addEventListener(
+“keydown”,
+event => {
+
+if (
+  event.key === "Enter" &&
+  !event.shiftKey
+) {
+  event.preventDefault();
+  sendMessage();
+}
+
+}
+);
+
+sendButton.addEventListener(
+“click”,
+sendMessage
+);
+
+/* =========================
+AUTO RESIZE
+========================= */
+
+function autoResize() {
+
+messageInput.style.height =
+“auto”;
+
+messageInput.style.height =
+Math.min(
+messageInput.scrollHeight,
+180
+) + “px”;
+}
+
+messageInput.addEventListener(
+“input”,
+autoResize
+);
+
+/* =========================
+CODE MODE
+========================= */
+
+codeModeButton.addEventListener(
+“click”,
+() => {
+
+codeMode =
+  !codeMode;
+modeIndicator.classList.toggle(
+  "show",
+  codeMode
+);
+codeModeButton.classList.toggle(
+  "active",
+  codeMode
+);
+
+}
+);
+
+/* =========================
+MOBILE MENU
+========================= */
+
+function openSidebar() {
+sidebar.classList.add(“open”);
+}
+
+function closeSidebar() {
+sidebar.classList.remove(“open”);
+}
+
+mobileMenu.addEventListener(
+“click”,
+openSidebar
+);
+
+closeMenu.addEventListener(
+“click”,
+closeSidebar
+);
+
+exitButton.addEventListener(
+“click”,
+closeSidebar
+);
+
+/* =========================
+NEW CHAT
+========================= */
+
+newChatButton.addEventListener(
+“click”,
+createChat
+);
+
+/* =========================
+SCROLL
+========================= */
+
+function scrollToBottom() {
+
+requestAnimationFrame(() => {
+
+messagesEl.scrollTop =
+  messagesEl.scrollHeight;
+
+});
+}
+
+/* =========================
+START
+========================= */
+
+if (chats.length > 0) {
+
+currentChatId =
+chats[0].id;
+
+renderHistory();
+
+renderChat();
+
+} else {
+
+renderHistory();
+
+}
+
+autoResize();
