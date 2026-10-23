@@ -1,556 +1,684 @@
-* {
-  box-sizing: border-box;
-}
-html,
-body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-body {
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
-  color: #171717;
-  background: #fff;
-}
-button,
-textarea {
-  font: inherit;
-}
-button {
-  border: 0;
-}
-/* APP */
-.app {
-  width: 100%;
-  height: 100dvh;
-  display: flex;
-}
-/* SIDEBAR */
-.sidebar {
-  width: 230px;
-  min-width: 230px;
-  height: 100%;
-  background: #f7f7f8;
-  border-right: 1px solid #e6e6e6;
-  display: flex;
-  flex-direction: column;
-}
-.sidebar-header {
-  height: 52px;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-}
-.brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #111;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-}
-.close-menu {
-  display: none;
-  background: transparent;
-  color: #777;
-  font-size: 25px;
-  cursor: pointer;
-  padding: 0;
-}
-/* SIDEBAR ACTIONS */
-.sidebar-actions {
-  padding: 6px 9px;
-}
-.new-chat,
-.code-mode {
-  width: 100%;
-  height: 37px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-  cursor: pointer;
-  font-size: 13px;
-  text-align: left;
-  transition:
-    background .15s ease,
-    transform .1s ease;
-}
-.new-chat {
-  margin-bottom: 5px;
-  background: #111;
-  color: #fff;
-}
-.new-chat:hover {
-  background: #222;
-}
-.new-chat:active,
-.code-mode:active {
-  transform: scale(.98);
-}
-.code-mode {
-  background: transparent;
-  color: #333;
-}
-.code-mode:hover,
-.code-mode.active {
-  background: #e7e7e8;
-}
-/* HISTORY */
-.history {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 5px 9px;
-}
-.history::-webkit-scrollbar {
-  width: 5px;
-}
-.history::-webkit-scrollbar-thumb {
-  background: #d4d4d4;
-  border-radius: 10px;
-}
-.history-title {
-  padding: 7px;
-  font-size: 11px;
-  color: #888;
-}
-.history-item {
-  width: 100%;
-  min-height: 34px;
-  margin-bottom: 2px;
-  padding: 7px 9px;
-  border-radius: 8px;
-  background: transparent;
-  color: #333;
-  cursor: pointer;
-  text-align: left;
-  font-size: 13px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: background .15s ease;
-}
-.history-item:hover,
-.history-item.active {
-  background: #e5e5e6;
-}
-.sidebar-bottom {
-  padding: 8px;
-}
-.exit-button {
-  width: 100%;
-  height: 34px;
-  border-radius: 8px;
-  background: transparent;
-  color: #666;
-  cursor: pointer;
-  text-align: left;
-  padding: 0 9px;
-  font-size: 12px;
-}
-.exit-button:hover {
-  background: #e9e9ea;
-}
-/* MAIN */
-.main {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  position: relative;
-  background: #fff;
-}
-.topbar {
-  height: 48px;
-  border-bottom: 1px solid #ededed;
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  background: rgba(255, 255, 255, .96);
-}
-.mobile-menu {
-  display: none;
-  background: transparent;
-  color: #222;
-  cursor: pointer;
-  font-size: 20px;
-  padding: 3px 5px;
-  border-radius: 7px;
-}
-.mobile-menu:hover {
-  background: #f1f1f1;
-}
-.mobile-title {
-  display: none;
-}
-/* CHAT */
-.chat {
-  height: calc(100% - 48px);
-  position: relative;
-}
-.messages {
-  height: 100%;
-  overflow-y: auto;
-  padding: 20px 12px 105px;
-  scroll-behavior: smooth;
-}
-.messages::-webkit-scrollbar {
-  width: 6px;
-}
-.messages::-webkit-scrollbar-thumb {
-  background: #d8d8d8;
-  border-radius: 10px;
-}
-/* WELCOME */
-.welcome {
-  min-height: calc(100% - 20px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-.welcome-mark {
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
-  background: #111;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 21px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  box-shadow: 0 5px 18px rgba(0, 0, 0, .08);
-}
-.welcome h1 {
-  margin: 0 0 5px;
-  font-size: 23px;
-  letter-spacing: -.4px;
-}
-.welcome p {
-  margin: 0;
-  color: #888;
-  font-size: 13px;
-}
-/* MESSAGES */
-.message {
-  max-width: 760px;
-  margin: 0 auto 16px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.message.user {
-  display: flex;
-  justify-content: flex-end;
-}
-.message.user .message-content {
-  max-width: 80%;
-  padding: 9px 12px;
-  background: #f0f0f0;
-  border-radius: 15px;
-  color: #171717;
-}
-.message-content {
-  overflow-wrap: anywhere;
-}
-.message-image {
-  display: block;
-  width: auto;
-  max-width: 100%;
-  max-height: 350px;
-  border-radius: 11px;
-  margin-bottom: 7px;
-  object-fit: contain;
-}
-/* THINKING */
-.thinking-message {
-  opacity: .65;
-}
-.thinking-text {
-  color: #777;
-  font-size: 13px;
-}
-.thinking-dots {
-  display: inline-block;
-  width: 18px;
-  text-align: left;
-  animation: thinkingDots 1.2s infinite;
-}
-@keyframes thinkingDots {
-  0%,
-  100% {
-    opacity: .2;
-  }
-  50% {
-    opacity: 1;
+const STORAGE_KEY = "mirror_chats_v1";
+/* =========================
+   ELEMENTS
+========================= */
+const sidebar = document.getElementById("sidebar");
+const mobileMenu = document.getElementById("mobileMenu");
+const closeMenu = document.getElementById("closeMenu");
+const exitButton = document.getElementById("exitButton");
+const newChatButton = document.getElementById("newChat");
+const codeModeButton = document.getElementById("codeMode");
+const modeIndicator = document.getElementById("modeIndicator");
+const historyList = document.getElementById("historyList");
+const messages = document.getElementById("messages");
+const messageInput = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendButton");
+const imageButton = document.getElementById("imageButton");
+const imageInput = document.getElementById("imageInput");
+const imagePreview = document.getElementById("imagePreview");
+const previewImage = document.getElementById("previewImage");
+const removeImageButton = document.getElementById("removeImage");
+/* =========================
+   STATE
+========================= */
+let chats = [];
+let currentChatId = null;
+let codeMode = false;
+let selectedImage = null;
+let isSending = false;
+/* =========================
+   STORAGE
+========================= */
+function loadChats() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) {
+      chats = [];
+      return;
+    }
+    const parsed = JSON.parse(saved);
+    if (Array.isArray(parsed)) {
+      chats = parsed;
+    } else {
+      chats = [];
+    }
+  } catch (error) {
+    console.error("Ошибка загрузки чатов:", error);
+    chats = [];
   }
 }
-/* COMPOSER */
-.composer-area {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 7px 10px 7px;
-  background: linear-gradient(
-    to top,
-    #fff 72%,
-    rgba(255, 255, 255, 0)
+function saveChats() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(chats)
+    );
+  } catch (error) {
+    console.error("Ошибка сохранения чатов:", error);
+  }
+}
+/* =========================
+   HELPERS
+========================= */
+function generateId() {
+  return (
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2, 8)
   );
 }
-.composer {
-  width: 100%;
-  max-width: 760px;
-  min-height: 44px;
-  margin: 0 auto;
-  padding: 5px;
-  display: flex;
-  align-items: flex-end;
-  gap: 5px;
-  background: rgba(255, 255, 255, .98);
-  border: 1px solid #d5d5d5;
-  border-radius: 15px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, .035);
-  transition:
-    border-color .15s ease,
-    box-shadow .15s ease;
+function getCurrentChat() {
+  return chats.find(
+    chat => chat.id === currentChatId
+  );
 }
-.composer:focus-within {
-  border-color: #bdbdbd;
-  box-shadow: 0 3px 14px rgba(0, 0, 0, .055);
+function closeSidebar() {
+  sidebar.classList.remove("open");
 }
-.image-button,
-.send-button {
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    background .15s ease,
-    transform .1s ease;
+function scrollToBottom() {
+  requestAnimationFrame(() => {
+    messages.scrollTop = messages.scrollHeight;
+  });
 }
-.image-button {
-  background: #f0f0f0;
-  font-size: 16px;
+function escapeHtml(text = "") {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
-.image-button:hover {
-  background: #e6e6e6;
+/* =========================
+   WELCOME
+========================= */
+function renderWelcome() {
+  messages.innerHTML = `
+    <div class="welcome">
+      <div class="welcome-mark">M</div>
+      <h1>Чем могу помочь?</h1>
+      <p>Напиши сообщение Mirror</p>
+    </div>
+  `;
 }
-.send-button {
-  background: #111;
-  color: #fff;
-  font-size: 18px;
+/* =========================
+   CREATE CHAT
+========================= */
+function createChat() {
+  const chat = {
+    id: generateId(),
+    title: "Новый чат",
+    messages: [],
+    createdAt: Date.now()
+  };
+  chats.unshift(chat);
+  currentChatId = chat.id;
+  codeMode = false;
+  updateCodeMode();
+  clearSelectedImage();
+  saveChats();
+  renderHistory();
+  renderMessages();
+  closeSidebar();
+  setTimeout(() => {
+    messageInput.focus();
+  }, 100);
 }
-.send-button:hover {
-  background: #252525;
+/* =========================
+   OPEN CHAT
+========================= */
+function openChat(id) {
+  const chat = chats.find(
+    item => item.id === id
+  );
+  if (!chat) return;
+  currentChatId = id;
+  /*
+    По твоему старому правилу:
+    при переходе в старый чат
+    Mirror Code выключается.
+  */
+  codeMode = false;
+  updateCodeMode();
+  clearSelectedImage();
+  renderHistory();
+  renderMessages();
+  closeSidebar();
 }
-.image-button:active,
-.send-button:active {
-  transform: scale(.94);
+/* =========================
+   HISTORY
+========================= */
+function renderHistory() {
+  historyList.innerHTML = "";
+  chats.forEach(chat => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "history-item";
+    if (chat.id === currentChatId) {
+      button.classList.add("active");
+    }
+    button.textContent =
+      chat.title || "Новый чат";
+    button.addEventListener("click", () => {
+      openChat(chat.id);
+    });
+    historyList.appendChild(button);
+  });
 }
-.image-button:disabled,
-.send-button:disabled {
-  opacity: .5;
-  cursor: default;
-  transform: none;
+/* =========================
+   CODE MODE
+========================= */
+function updateCodeMode() {
+  codeModeButton.classList.toggle(
+    "active",
+    codeMode
+  );
+  modeIndicator.classList.toggle(
+    "show",
+    codeMode
+  );
 }
-#messageInput {
-  flex: 1;
-  min-width: 0;
-  max-height: 130px;
-  padding: 7px 3px;
-  resize: none;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #171717;
-  font-size: 14px;
-  line-height: 1.35;
+function toggleCodeMode() {
+  codeMode = !codeMode;
+  updateCodeMode();
+  closeSidebar();
 }
-#messageInput::placeholder {
-  color: #999;
+/* =========================
+   IMAGE
+========================= */
+function clearSelectedImage() {
+  selectedImage = null;
+  imageInput.value = "";
+  previewImage.removeAttribute("src");
+  imagePreview.classList.remove("show");
 }
-/* IMAGE PREVIEW */
-.image-preview {
-  display: none;
-  position: relative;
-  width: 100%;
-  max-width: 760px;
-  margin: 0 auto 5px;
-  padding: 5px;
-  background: #f7f7f8;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .03);
+function openImagePicker() {
+  if (isSending) return;
+  imageInput.click();
 }
-.image-preview.show {
-  display: block;
-}
-.image-preview img {
-  display: block;
-  width: auto;
-  max-width: 100%;
-  max-height: 120px;
-  border-radius: 7px;
-  object-fit: contain;
-}
-.remove-image {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 23px;
-  height: 23px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, .72);
-  color: #fff;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.remove-image:hover {
-  background: #111;
-}
-/* MODE */
-.mode-indicator {
-  display: none;
-  width: fit-content;
-  margin: 0 auto 4px;
-  padding: 4px 8px;
-  border-radius: 7px;
-  background: #eee;
-  color: #555;
-  font-size: 10px;
-}
-.mode-indicator.show {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-}
-/* DISCLAIMER */
-.disclaimer {
-  margin: 4px auto 0;
-  max-width: 760px;
-  text-align: center;
-  font-size: 8px;
-  color: #999;
-}
-/* CODE */
-.code-block {
-  position: relative;
-  margin: 9px 0;
-  border-radius: 9px;
-  background: #181818;
-  color: #f5f5f5;
-  overflow: hidden;
-  border: 1px solid #292929;
-}
-.code-block pre {
-  margin: 0;
-  padding: 12px;
-  overflow-x: auto;
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 12px;
-  line-height: 1.5;
-}
-.copy-code {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  padding: 4px 7px;
-  border-radius: 6px;
-  background: #333;
-  color: #eee;
-  cursor: pointer;
-  font-size: 10px;
-}
-.copy-code:hover {
-  background: #444;
-}
-/* MOBILE */
-@media (max-width: 700px) {
-  .sidebar {
-    position: fixed;
-    z-index: 100;
-    top: 0;
-    left: 0;
-    transform: translateX(-100%);
-    transition: transform .2s ease;
-    box-shadow: 7px 0 25px rgba(0, 0, 0, .15);
+function handleImageSelection() {
+  const file = imageInput.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    alert("Выбери изображение.");
+    clearSelectedImage();
+    return;
   }
-  .sidebar.open {
-    transform: translateX(0);
+  /*
+    Ограничение, чтобы случайно не забить
+    localStorage огромной фотографией.
+  */
+  const maxSize = 8 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert("Изображение слишком большое.");
+    clearSelectedImage();
+    return;
   }
-  .close-menu {
-    display: block;
-  }
-  .mobile-menu {
-    display: block;
-  }
-  .mobile-title {
-    display: block;
-    margin-left: 8px;
-    font-size: 15px;
-    font-weight: 600;
-  }
-  .topbar {
-    height: 45px;
-  }
-  .chat {
-    height: calc(100% - 45px);
-  }
-  .messages {
-    padding: 12px 8px 100px;
-  }
-  .message {
-    font-size: 14px;
-  }
-  .message.user .message-content {
-    max-width: 88%;
-  }
-  .message-image {
-    max-height: 300px;
-  }
-  .composer-area {
-    padding: 5px 7px 6px;
-  }
-  .composer {
-    min-height: 42px;
-    border-radius: 13px;
-  }
-  .image-button,
-  .send-button {
-    width: 31px;
-    min-width: 31px;
-    height: 31px;
-  }
-  #messageInput {
-    font-size: 14px;
-  }
-  .disclaimer {
-    font-size: 8px;
+  const reader = new FileReader();
+  reader.onload = () => {
+    selectedImage = reader.result;
+    previewImage.src = selectedImage;
+    imagePreview.classList.add("show");
+  };
+  reader.onerror = () => {
+    alert("Не удалось открыть изображение.");
+    clearSelectedImage();
+  };
+  reader.readAsDataURL(file);
+}
+/* =========================
+   TEXTAREA
+========================= */
+function resizeTextarea() {
+  messageInput.style.height = "auto";
+  const newHeight = Math.min(
+    messageInput.scrollHeight,
+    130
+  );
+  messageInput.style.height =
+    newHeight + "px";
+}
+/* =========================
+   SIMPLE MARKDOWN
+========================= */
+function formatMessage(text = "") {
+  /*
+    Сначала защищаем HTML.
+  */
+  let safe = escapeHtml(text);
+  /*
+    Код ```...```
+  */
+  safe = safe.replace(
+    /```([\s\S]*?)```/g,
+    (_, code) => {
+      return `
+        <div class="code-block">
+          <button
+            class="copy-code"
+            type="button"
+          >
+            Копировать
+          </button>
+          <pre><code>${code.trim()}</code></pre>
+        </div>
+      `;
+    }
+  );
+  /*
+    Inline code
+  */
+  safe = safe.replace(
+    /`([^`\n]+)`/g,
+    "<code>$1</code>"
+  );
+  /*
+    **жирный**
+  */
+  safe = safe.replace(
+    /\*\*(.*?)\*\*/g,
+    "<strong>$1</strong>"
+  );
+  /*
+    Переносы строк
+  */
+  safe = safe.replace(
+    /\n/g,
+    "<br>"
+  );
+  return safe;
+}
+/* =========================
+   COPY CODE
+========================= */
+async function copyCode(button) {
+  const block = button.closest(".code-block");
+  if (!block) return;
+  const code = block.querySelector("code");
+  if (!code) return;
+  try {
+    await navigator.clipboard.writeText(
+      code.textContent
+    );
+    const oldText = button.textContent;
+    button.textContent = "Скопировано";
+    setTimeout(() => {
+      button.textContent = oldText;
+    }, 1200);
+  } catch (error) {
+    console.error(
+      "Ошибка копирования:",
+      error
+    );
   }
 }
+/* =========================
+   CREATE MESSAGE ELEMENT
+========================= */
+function createMessageElement(item) {
+  const wrapper = document.createElement("div");
+  wrapper.className =
+    `message ${
+      item.role === "assistant"
+        ? "assistant"
+        : "user"
+    }`;
+  const content = document.createElement("div");
+  content.className = "message-content";
+  if (item.image) {
+    const img = document.createElement("img");
+    img.className = "message-image";
+    img.src = item.image;
+    img.alt = "Изображение";
+    content.appendChild(img);
+  }
+  if (item.content) {
+    const text = document.createElement("div");
+    if (item.role === "assistant") {
+      text.innerHTML =
+        formatMessage(item.content);
+    } else {
+      text.textContent = item.content;
+    }
+    content.appendChild(text);
+  }
+  wrapper.appendChild(content);
+  return wrapper;
+}
+/* =========================
+   RENDER MESSAGES
+========================= */
+function renderMessages() {
+  const chat = getCurrentChat();
+  if (
+    !chat ||
+    !Array.isArray(chat.messages) ||
+    chat.messages.length === 0
+  ) {
+    renderWelcome();
+    return;
+  }
+  messages.innerHTML = "";
+  chat.messages.forEach(item => {
+    messages.appendChild(
+      createMessageElement(item)
+    );
+  });
+  scrollToBottom();
+}
+/* =========================
+   THINKING
+========================= */
+function createThinkingMessage() {
+  const wrapper = document.createElement("div");
+  wrapper.className =
+    "message assistant thinking-message";
+  wrapper.innerHTML = `
+    <div class="message-content">
+      <span class="thinking-text">
+        think<span class="thinking-dots">...</span>
+      </span>
+    </div>
+  `;
+  messages.appendChild(wrapper);
+  scrollToBottom();
+  return wrapper;
+}
+/* =========================
+   TITLE
+========================= */
+function createTitle(text) {
+  const clean = text
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!clean) {
+    return "Фото";
+  }
+  if (clean.length <= 32) {
+    return clean;
+  }
+  return clean.slice(0, 32) + "…";
+}
+/* =========================
+   SEND
+========================= */
+async function sendMessage() {
+  if (isSending) return;
+  const text = messageInput.value.trim();
+  if (!text && !selectedImage) {
+    return;
+  }
+  let chat = getCurrentChat();
+  if (!chat) {
+    createChat();
+    chat = getCurrentChat();
+  }
+  if (!chat) return;
+  /*
+    Сохраняем историю ДО добавления
+    нового сообщения.
+  */
+  const conversationHistory =
+    chat.messages
+      .slice(-30)
+      .map(item => ({
+        role: item.role,
+        content: item.content || "",
+        image: item.image || null
+      }));
+  const imageForMessage =
+    selectedImage || null;
+  const userMessage = {
+    role: "user",
+    content: text,
+    image: imageForMessage
+  };
+  chat.messages.push(userMessage);
+  if (
+    chat.title === "Новый чат" ||
+    !chat.title
+  ) {
+    chat.title = createTitle(text);
+  }
+  /*
+    Очищаем поле.
+  */
+  messageInput.value = "";
+  resizeTextarea();
+  clearSelectedImage();
+  saveChats();
+  renderHistory();
+  renderMessages();
+  /*
+    THINK...
+  */
+  const thinking =
+    createThinkingMessage();
+  isSending = true;
+  sendButton.disabled = true;
+  imageButton.disabled = true;
+  let assistantText = "";
+  let assistantElement = null;
+  let assistantContent = null;
+  try {
+    const response = await fetch(
+      "/api/chat",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: text,
+          mode: codeMode
+            ? "code"
+            : "normal",
+          image: imageForMessage,
+          history: conversationHistory
+        })
+      }
+    );
+    if (!response.ok) {
+      let errorText = "";
+      try {
+        errorText =
+          await response.text();
+      } catch {}
+      throw new Error(
+        errorText ||
+        `HTTP ${response.status}`
+      );
+    }
+    if (!response.body) {
+      const result =
+        await response.text();
+      thinking.remove();
+      assistantText = result;
+      chat.messages.push({
+        role: "assistant",
+        content: assistantText,
+        image: null
+      });
+      saveChats();
+      renderMessages();
+      return;
+    }
+    const reader =
+      response.body.getReader();
+    const decoder =
+      new TextDecoder();
+    let firstChunk = true;
+    while (true) {
+      const {
+        value,
+        done
+      } = await reader.read();
+      if (done) break;
+      const chunk =
+        decoder.decode(
+          value,
+          { stream: true }
+        );
+      if (!chunk) continue;
+      if (firstChunk) {
+        firstChunk = false;
+        thinking.remove();
+        assistantElement =
+          document.createElement("div");
+        assistantElement.className =
+          "message assistant";
+        assistantContent =
+          document.createElement("div");
+        assistantContent.className =
+          "message-content";
+        assistantElement.appendChild(
+          assistantContent
+        );
+        messages.appendChild(
+          assistantElement
+        );
+      }
+      assistantText += chunk;
+      if (assistantContent) {
+        assistantContent.innerHTML =
+          formatMessage(
+            assistantText
+          );
+      }
+      scrollToBottom();
+    }
+    /*
+      Если сервер почему-то вернул
+      пустой ответ.
+    */
+    if (!assistantText.trim()) {
+      thinking.remove();
+      throw new Error(
+        "Mirror вернул пустой ответ."
+      );
+    }
+    chat.messages.push({
+      role: "assistant",
+      content: assistantText,
+      image: null
+    });
+    saveChats();
+  } catch (error) {
+    console.error(
+      "Ошибка Mirror:",
+      error
+    );
+    thinking.remove();
+    if (
+      assistantElement &&
+      !assistantText
+    ) {
+      assistantElement.remove();
+    }
+    const errorMessage = {
+      role: "assistant",
+      content:
+        "Не удалось получить ответ. Попробуй ещё раз.",
+      image: null
+    };
+    chat.messages.push(
+      errorMessage
+    );
+    saveChats();
+    renderMessages();
+  } finally {
+    isSending = false;
+    sendButton.disabled = false;
+    imageButton.disabled = false;
+    messageInput.focus();
+  }
+}
+/* =========================
+   EVENTS
+========================= */
+newChatButton.addEventListener(
+  "click",
+  createChat
+);
+codeModeButton.addEventListener(
+  "click",
+  toggleCodeMode
+);
+mobileMenu.addEventListener(
+  "click",
+  () => {
+    sidebar.classList.add("open");
+  }
+);
+closeMenu.addEventListener(
+  "click",
+  closeSidebar
+);
+exitButton.addEventListener(
+  "click",
+  closeSidebar
+);
+imageButton.addEventListener(
+  "click",
+  openImagePicker
+);
+imageInput.addEventListener(
+  "change",
+  handleImageSelection
+);
+removeImageButton.addEventListener(
+  "click",
+  clearSelectedImage
+);
+sendButton.addEventListener(
+  "click",
+  sendMessage
+);
+messageInput.addEventListener(
+  "input",
+  resizeTextarea
+);
+messageInput.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+      event.preventDefault();
+      sendMessage();
+    }
+  }
+);
+/*
+  Кнопки копирования создаются
+  динамически, поэтому слушаем
+  клики на messages.
+*/
+messages.addEventListener(
+  "click",
+  event => {
+    const button =
+      event.target.closest(
+        ".copy-code"
+      );
+    if (!button) return;
+    copyCode(button);
+  }
+);
+/* =========================
+   START
+========================= */
+function init() {
+  loadChats();
+  /*
+    Открываем последний существующий
+    чат. Если чатов нет — показываем
+    стартовый экран.
+  */
+  if (chats.length > 0) {
+    currentChatId =
+      chats[0].id;
+  }
+  updateCodeMode();
+  renderHistory();
+  renderMessages();
+  resizeTextarea();
+}
+init();
